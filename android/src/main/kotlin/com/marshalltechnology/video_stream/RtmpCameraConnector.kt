@@ -263,9 +263,12 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val useA
         isStreaming = false
         stopStreamRtp()
         if (!isRecording) {
-           microphoneManager!!.stop()
+
            videoEncoder!!.stop()
-           audioEncoder!!.stop()
+            if(useAudio){
+                microphoneManager!!.stop()
+                audioEncoder!!.stop()
+            }
            glInterface.stop()
         }
     }
