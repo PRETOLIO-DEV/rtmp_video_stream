@@ -70,10 +70,10 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val useA
     private val fpsListener = FpsListener()
 
     init {
-        if(useAudio){
-            microphoneManager = MicrophoneManager(this)
-            audioEncoder = AudioEncoder(this)
-        }
+
+        microphoneManager = MicrophoneManager(this)
+        audioEncoder = AudioEncoder(this)
+
 
 
         srsFlvMuxer = SrsFlvMuxer(this)
@@ -263,12 +263,12 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val useA
         isStreaming = false
         stopStreamRtp()
         if (!isRecording) {
-
-           videoEncoder!!.stop()
             if(useAudio){
                 microphoneManager!!.stop()
                 audioEncoder!!.stop()
             }
+           videoEncoder!!.stop()
+
            glInterface.stop()
         }
     }

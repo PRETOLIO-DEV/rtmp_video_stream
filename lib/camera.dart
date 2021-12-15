@@ -314,6 +314,15 @@ class CameraController extends ValueNotifier<CameraValue> {
     await _channel.invokeMethod<void>('prepareForVideoRecording');
   }
 
+  Future<void> audio(bool enable) async {
+    await _channel.invokeMapMethod<String, dynamic>(
+      'mute',
+      <String, dynamic>{
+        'mute': enable
+      },
+    );
+  }
+
   Future<void> prepareForVideoStreaming() async {
     await _channel.invokeMethod<void>('prepareForVideoStreaming');
   }

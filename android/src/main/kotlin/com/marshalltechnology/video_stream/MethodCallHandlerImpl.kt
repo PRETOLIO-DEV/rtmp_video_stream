@@ -99,6 +99,14 @@ internal class MethodCallHandlerImpl(
                     handleException(e, result)
                 }
             }
+            "mute" -> {
+                try {
+                    Log.i("Mute", call.arguments.toString())
+                    camera!!.MuteVideo(call.argument("mute"))
+                } catch (e: Exception) {
+                    handleException(e, result)
+                }
+            }
             "stopImageStream" -> {
                 try {
                     camera!!.startPreview()

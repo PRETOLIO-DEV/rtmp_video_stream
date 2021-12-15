@@ -245,6 +245,21 @@ class Camera(
         cameraDevice!!.createCaptureSession(surfaceList, callback, null)
     }
 
+    fun MuteVideo(mute: Boolean, result: MethodChannel.Result) {
+        try {
+            if (mute) {
+                rtmpCamera!!.enableAudio()
+            }else{
+                rtmpCamera!!.disableAudio()
+            }
+            result.success(null)
+        } catch (e: CameraAccessException) {
+            result.error("Mute Failed", e.message, null)
+        } catch (e: IllegalStateException) {
+            result.error("Mute Failed", e.message, null)
+        }
+    }
+
     fun stopVideoRecordingOrStreaming(result: MethodChannel.Result) {
         Log.i("Camera", "stopVideoRecordingOrStreaming ")
 
