@@ -102,7 +102,7 @@ internal class MethodCallHandlerImpl(
             "mute" -> {
                 try {
                     Log.i("Mute", call.arguments.toString())
-                    camera!!.MuteVideo(call.argument("mute"), result)
+                    camera!!.MuteVideo(call.argument("mute")!!, result)
                 } catch (e: Exception) {
                     handleException(e, result)
                 }
