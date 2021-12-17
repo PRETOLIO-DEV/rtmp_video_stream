@@ -69,6 +69,7 @@ class Camera(
             rtmpCamera!!.stopStream()
             rtmpCamera = null
         }
+        isPortrait = true;
         Log.i(TAG, "prepareCameraForRecordAndStream(audio: " + audio + " opengl=" + useOpenGL+ ", portrait: " + isPortrait +   ", currentOrientation: " + currentOrientation + ", mediaOrientation: " + mediaOrientation
          + ", frontfacing: " + isFrontFacing + " )" )
         rtmpCamera = RtmpCameraConnector(
@@ -190,11 +191,11 @@ class Camera(
 
         // Build Flutter surface to render to
         val surfaceTexture = flutterTexture.surfaceTexture()
-        if (isPortrait) {
+        //if (isPortrait) {
             surfaceTexture.setDefaultBufferSize(previewSize.width, previewSize.height)
-        } else {
+/*        } else {
             surfaceTexture.setDefaultBufferSize(previewSize.height, previewSize.width)
-        }
+        }*/
         val flutterSurface = Surface(surfaceTexture)
 
         // The capture request.

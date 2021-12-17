@@ -202,7 +202,9 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val useA
      */
     fun setForce(forceVideo: Force, forceAudio: Force) {
         videoEncoder!!.force = forceVideo
-        audioEncoder!!.setForce(forceAudio)
+        if(useAudio){
+            audioEncoder!!.setForce(forceAudio)
+        }
     }
 
 
