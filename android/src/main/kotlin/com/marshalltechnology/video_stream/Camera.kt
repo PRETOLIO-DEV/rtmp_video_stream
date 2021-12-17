@@ -34,11 +34,12 @@ class Camera(
         val activity: Activity?,
         val flutterTexture: SurfaceTextureEntry,
         val dartMessenger: DartMessenger,
-        val cameraName: String,
+        val cameraN: String,
         val resolutionPreset: String?,
         val streamingPreset: String?,
         val enableAudio: Boolean,
         val useOpenGL: Boolean) : ConnectCheckerRtmp {
+    private var cameraName: String = cameraN
     private val cameraManager: CameraManager
     private val orientationEventListener: OrientationEventListener
     private val isFrontFacing: Boolean
@@ -103,14 +104,13 @@ class Camera(
 
     @SuppressLint("MissingPermission")
     @Throws(CameraAccessException::class)
-    fun open(result: MethodChannel.Result) {
+    fun open(camName: String, result: MethodChannel.Result) {
         pictureImageReader = ImageReader.newInstance(
                 captureSize.width, captureSize.height, ImageFormat.JPEG, 2)
-
-
+        cameraName = camName
         // Used to steam image byte data to dart side.
         cameraManager.openCamera(
-                cameraName,
+                camName,
                 object : CameraDevice.StateCallback() {
                     override fun onOpened(device: CameraDevice) {
                         cameraDevice = device
@@ -245,6 +245,17 @@ class Camera(
 
         // Start the session
         cameraDevice!!.createCaptureSession(surfaceList, callback, null)
+    }
+
+    fun toggleCamera(camName: String, result: MethodChannel.Result) {
+        try {
+            closeToggle()
+            open(camName, result)
+        } catch (e: CameraAccessException) {
+            result.error("Mute Failed", e.message, null)
+        } catch (e: IllegalStateException) {
+            result.error("Mute Failed", e.message, null)
+        }
     }
 
     fun MuteVideo(mute: Boolean, result: MethodChannel.Result) {
@@ -383,6 +394,22 @@ class Camera(
         }
     }
 
+    fun closeToggle() {
+        closeCaptureSession()
+        if (cameraDevice != null) {
+            cameraDevice!!.close()
+            cameraDevice = null
+        }
+        if (pictureImageReader != null) {
+            pictureImageReader!!.close()
+            pictureImageReader = null
+        }
+        if (imageStreamReader != null) {
+            imageStreamReader!!.close()
+            imageStreamReader = null
+        }
+    }
+
     fun close() {
         closeCaptureSession()
         if (cameraDevice != null) {
@@ -426,7 +453,7 @@ class Camera(
                 createCaptureSession(
                         CameraDevice.TEMPLATE_RECORD,
                         Runnable { rtmpCamera!!.startStream(url) },
-                        rtmpCamera!!.inputSurface,
+                        rtmpCamera!!.inputSurface
                 )
             } else {
                 rtmpCamera!!.startStream(url)

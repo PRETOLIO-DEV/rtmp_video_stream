@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:video_player/video_player.dart';
 import 'package:video_stream/camera.dart';
 import 'package:wakelock/wakelock.dart';
 
@@ -32,15 +31,14 @@ void logError(String code, String message) =>
 class _CameraExampleHomeState extends State<CameraExampleHome>
     with WidgetsBindingObserver, TickerProviderStateMixin {
   CameraController? controller =
-      CameraController(cameras[1], ResolutionPreset.high);
+      CameraController(cameras[1], ResolutionPreset.low,androidUseOpenGL: true);
   String? imagePath;
   String? videoPath;
   String? url;
-  VideoPlayerController? videoController;
-  late VoidCallback videoPlayerListener;
+
   bool enableAudio = true;
   bool useOpenGL = true;
-  String streamURL = "rtmp://[your rtmp server address]/live";
+  String streamURL = 'rtmp://3.22.221.38:1935/live/47c8b9ab06ed4729be03726f49fc86e4';
   bool streaming = false;
   String? cameraDirection;
 
@@ -50,12 +48,12 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
   void initState() {
     _initialize();
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance!.addObserver(this);
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
+    WidgetsBinding.instance!.removeObserver(this);
     super.dispose();
   }
 
@@ -93,72 +91,10 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
 
   toggleCameraDirection() async {
     if (cameraDirection == 'front') {
-      if (controller != null) {
-        await controller?.dispose();
-      }
-      controller = CameraController(
-        cameras[0],
-        ResolutionPreset.high,
-        enableAudio: enableAudio,
-        androidUseOpenGL: useOpenGL,
-      );
-
-      // If the controller is updated then update the UI.
-      controller!.addListener(() {
-        if (mounted) setState(() {});
-        if (controller!.value.hasError) {
-          showInSnackBar('Camera error ${controller!.value.errorDescription}');
-          if (_timer != null) {
-            _timer!.cancel();
-            _timer = null;
-          }
-          Wakelock.disable();
-        }
-      });
-
-      try {
-        await controller!.initialize();
-      } on CameraException catch (e) {
-        _showCameraException(e);
-      }
-
-      if (mounted) {
-        setState(() {});
-      }
+      await controller!.toggleCamera(cameras.first.name);
       cameraDirection = 'back';
     } else {
-      if (controller != null) {
-        await controller!.dispose();
-      }
-      controller = CameraController(
-        cameras[1],
-        ResolutionPreset.high,
-        enableAudio: enableAudio,
-        androidUseOpenGL: useOpenGL,
-      );
-
-      // If the controller is updated then update the UI.
-      controller!.addListener(() {
-        if (mounted) setState(() {});
-        if (controller!.value.hasError) {
-          showInSnackBar('Camera error ${controller!.value.errorDescription}');
-          if (_timer != null) {
-            _timer!.cancel();
-            _timer = null;
-          }
-          Wakelock.disable();
-        }
-      });
-
-      try {
-        await controller!.initialize();
-      } on CameraException catch (e) {
-        _showCameraException(e);
-      }
-
-      if (mounted) {
-        setState(() {});
-      }
+      await controller!.toggleCamera(cameras.last.name);
       cameraDirection = 'front';
     }
   }
@@ -287,7 +223,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     }
     controller = CameraController(
       cameraDescription,
-      ResolutionPreset.medium,
+      ResolutionPreset.low,
       enableAudio: enableAudio,
       androidUseOpenGL: useOpenGL,
     );
@@ -369,7 +305,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
         _timer = null;
       }
       url = myUrl;
-      await controller!.startVideoStreaming(url!, androidUseOpenGL: false);
+      await controller!.startVideoStreaming(url!, androidUseOpenGL: true, audio: true);
       // _timer = Timer.periodic(Duration(seconds: 1), (timer) async {
       //   var stats = await controller!.getStreamStatistics();
       //   print(stats);
@@ -383,10 +319,12 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
 
   Future<void> stopVideoStreaming() async {
     try {
-      await controller!.stopVideoStreaming();
-      if (_timer != null) {
-        _timer!.cancel();
-        _timer = null;
+      if(controller!.value.isStreamingVideoRtmp){
+        await controller!.stopVideoStreaming();
+        if (_timer != null) {
+          _timer!.cancel();
+          _timer = null;
+        }
       }
     } on CameraException catch (e) {
       _showCameraException(e);

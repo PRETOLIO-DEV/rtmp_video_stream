@@ -1,6 +1,6 @@
-# video_stream_example
+# example
 
-Demonstrates how to use the video_stream plugin.
+A new Flutter project.
 
 ## Getting Started
 

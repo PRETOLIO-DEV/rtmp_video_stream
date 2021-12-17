@@ -107,6 +107,14 @@ internal class MethodCallHandlerImpl(
                     handleException(e, result)
                 }
             }
+            "toggleCamera" -> {
+                try {
+                    Log.i("toggleCamera", call.arguments.toString())
+                    camera!!.toggleCamera(call.argument("camera")!!,result)
+                } catch (e: Exception) {
+                    handleException(e, result)
+                }
+            }
             "stopImageStream" -> {
                 try {
                     camera!!.startPreview()
@@ -158,7 +166,7 @@ internal class MethodCallHandlerImpl(
                 streamingPreset,
                 enableAudio,
                 enableOpenGL)
-        camera!!.open(result)
+        camera!!.open(cameraName!!, result)
     }
 
     // We move catching CameraAccessException out of onMethodCall because it causes a crash
