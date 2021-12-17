@@ -69,7 +69,7 @@ class Camera(
             rtmpCamera!!.stopStream()
             rtmpCamera = null
         }
-        isPortrait = true;
+        isPortrait = true
         Log.i(TAG, "prepareCameraForRecordAndStream(audio: " + audio + " opengl=" + useOpenGL+ ", portrait: " + isPortrait +   ", currentOrientation: " + currentOrientation + ", mediaOrientation: " + mediaOrientation
          + ", frontfacing: " + isFrontFacing + " )" )
         rtmpCamera = RtmpCameraConnector(
