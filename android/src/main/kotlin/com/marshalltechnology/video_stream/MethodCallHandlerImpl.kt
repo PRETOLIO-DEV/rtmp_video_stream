@@ -110,7 +110,7 @@ internal class MethodCallHandlerImpl(
             "toggleCamera" -> {
                 try {
                     Log.i("toggleCamera", call.arguments.toString())
-                    camera!!.toggleCamera(call.argument("camera")!!,result)
+                    camera!!.toggleCamera(call.argument("url"),call.argument("camera")!!,result)
                 } catch (e: Exception) {
                     handleException(e, result)
                 }

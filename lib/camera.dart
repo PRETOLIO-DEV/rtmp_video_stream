@@ -323,11 +323,12 @@ class CameraController extends ValueNotifier<CameraValue> {
     );
   }
 
-  Future<void> toggleCamera(String camera) async {
+  Future<void> toggleCamera(String camera, String? url) async {
     await _channel.invokeMapMethod<String, dynamic>(
       'toggleCamera',
       <String, dynamic>{
-        'camera': camera
+        'camera': camera,
+        'url': url
       },
     );
   }

@@ -219,6 +219,7 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val useA
      * startPreview for you to resolution seated in @prepareVideo.
      */
     fun startStream(url: String) {
+        Log.i("toggleCamera startStream", isStreaming.toString())
         if (isStreaming) {
             return;
         }
@@ -227,6 +228,7 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val useA
     }
 
     fun startRecord(path: String) {
+
         if (isRecording) {
             return;
         }

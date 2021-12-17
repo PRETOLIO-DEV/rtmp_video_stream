@@ -61,6 +61,20 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     streaming = false;
     cameraDirection = 'front';
     // controller = CameraController(cameras[1], Resolution.high);
+
+    controller!.addListener(() {
+      if (mounted) setState(() {});
+      if (controller!.value.hasError) {
+        print('Camera error ${controller!.value.errorDescription}');
+        showInSnackBar('Camera error ${controller!.value.errorDescription}');
+        if (_timer != null) {
+          _timer!.cancel();
+          _timer = null;
+        }
+        Wakelock.disable();
+      }
+    });
+
     await controller!.initialize();
     if (!mounted) {
       return;
@@ -91,10 +105,10 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
 
   toggleCameraDirection() async {
     if (cameraDirection == 'front') {
-      await controller!.toggleCamera(cameras.first.name);
+      await controller!.toggleCamera(cameras.first.name, url);
       cameraDirection = 'back';
     } else {
-      await controller!.toggleCamera(cameras.last.name);
+      await controller!.toggleCamera(cameras.last.name, url);
       cameraDirection = 'front';
     }
   }
@@ -232,6 +246,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     controller!.addListener(() {
       if (mounted) setState(() {});
       if (controller!.value.hasError) {
+        print('Camera error ${controller!.value.errorDescription}');
         showInSnackBar('Camera error ${controller!.value.errorDescription}');
         if (_timer != null) {
           _timer!.cancel();
@@ -319,13 +334,13 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
 
   Future<void> stopVideoStreaming() async {
     try {
-      if(controller!.value.isStreamingVideoRtmp){
+      //if(controller!.value.isStreamingVideoRtmp){
         await controller!.stopVideoStreaming();
         if (_timer != null) {
           _timer!.cancel();
           _timer = null;
         }
-      }
+      //}
     } on CameraException catch (e) {
       _showCameraException(e);
       return;

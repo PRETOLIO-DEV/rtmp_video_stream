@@ -4,6 +4,7 @@ package com.marshalltechnology.video_stream
 import android.app.Activity
 import android.content.Context
 import android.graphics.ImageFormat
+import android.graphics.SurfaceTexture
 import android.hardware.camera2.CameraAccessException
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
@@ -12,6 +13,7 @@ import android.hardware.camera2.params.StreamConfigurationMap
 import android.media.CamcorderProfile
 import android.os.Build
 import android.util.Size
+import android.util.Log
 import androidx.annotation.RequiresApi
 import com.marshalltechnology.video_stream.Camera.ResolutionPreset
 import java.util.*
@@ -19,13 +21,31 @@ import java.util.*
 
 /** Provides various utilities for camera.  */
 object CameraUtils {
+    val profileArray = arrayOf(
+        CamcorderProfile.QUALITY_HIGH,
+        CamcorderProfile.QUALITY_2160P,
+        CamcorderProfile.QUALITY_1080P,
+        CamcorderProfile.QUALITY_720P,
+        CamcorderProfile.QUALITY_480P,
+        CamcorderProfile.QUALITY_QVGA,
+        CamcorderProfile.QUALITY_LOW
+    )
+    val qualityStartLookupProfileMap = mapOf(
+        ResolutionPreset.max to 0,
+        ResolutionPreset.ultraHigh to 1,
+        ResolutionPreset.veryHigh to 2,
+        ResolutionPreset.high to 3,
+        ResolutionPreset.medium to 4,
+        ResolutionPreset.low to 5
+    )
+
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-    fun computeBestPreviewSize(cameraName: String, preset: ResolutionPreset): Size {
+    fun computeBestPreviewSize(context: Context, cameraName: String, preset: ResolutionPreset): Size {
         var preset = preset
         if (preset.ordinal > ResolutionPreset.high.ordinal) {
             preset = ResolutionPreset.high
         }
-        val profile = getBestAvailableCamcorderProfileForResolutionPreset(cameraName, preset)
+        val profile = getBestAvailableCamcorderProfileForResolutionPreset(context, cameraName, preset)
         return Size(profile.videoFrameWidth, profile.videoFrameHeight)
     }
 
@@ -61,8 +81,39 @@ object CameraUtils {
     }
 
     fun getBestAvailableCamcorderProfileForResolutionPreset(
-            cameraName: String, preset: ResolutionPreset?): CamcorderProfile {
+            context: Context, cameraName: String, preset: ResolutionPreset?): CamcorderProfile {
         val cameraId = cameraName.toInt()
+
+        val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+        val characteristics = cameraManager.getCameraCharacteristics(cameraName)
+        val map = characteristics[CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP]!!
+        val supportedSet = mutableSetOf<String>()
+
+        for (size in map.getOutputSizes(SurfaceTexture::class.java)) {
+            supportedSet.add(size.toString())
+        }
+
+        Log.d("CameraUtils", "Supported set of modes for SurfaceTexture: $supportedSet")
+        val startIndex = qualityStartLookupProfileMap[preset]
+
+        if (startIndex == null)
+            throw IllegalArgumentException("No capture session available for current capture session.")
+
+        for (i in startIndex..profileArray.size) {
+            if (CamcorderProfile.hasProfile(cameraId, profileArray[i])) {
+                val profile = CamcorderProfile.get(cameraId, profileArray[i])
+                val profileKey = "${profile.videoFrameWidth}x${profile.videoFrameHeight}"
+
+                if (supportedSet.contains(profileKey)) {
+                    Log.d("CameraUtils", "Profile: $profileKey passed")
+                    return profile
+                } else
+                    Log.d("CameraUtils", "Trying profile: $profileKey failed")
+            }
+        }
+
+        throw IllegalArgumentException("No capture session available for current capture session.")
+/*
         return when (preset) {
             ResolutionPreset.max -> {
                 if (CamcorderProfile.hasProfile(cameraId, CamcorderProfile.QUALITY_HIGH)) {
@@ -182,6 +233,8 @@ object CameraUtils {
                         "No capture session available for current capture session.")
             }
         }
+
+ */
     }
 
     private class CompareSizesByArea : Comparator<Size> {

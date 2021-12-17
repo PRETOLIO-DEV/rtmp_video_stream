@@ -247,14 +247,17 @@ class Camera(
         cameraDevice!!.createCaptureSession(surfaceList, callback, null)
     }
 
-    fun toggleCamera(camName: String, result: MethodChannel.Result) {
+    fun toggleCamera(url: String?, camName: String, result: MethodChannel.Result) {
         try {
             closeToggle()
             open(camName, result)
+            Log.i("toggleCamera startStream", (url != null).toString())
+            //if(url != null)
+            //    rtmpCamera!!.startStream(url)
         } catch (e: CameraAccessException) {
-            result.error("Mute Failed", e.message, null)
+            result.error("toggleCamera Failed", e.message, null)
         } catch (e: IllegalStateException) {
-            result.error("Mute Failed", e.message, null)
+            result.error("toggleCamera Failed", e.message, null)
         }
     }
 
@@ -598,13 +601,14 @@ class Camera(
         sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION)!!
         currentOrientation = Math.round(activity.resources.configuration.orientation / 90.0).toInt() * 90
         val preset = ResolutionPreset.valueOf(resolutionPreset!!)
-        recordingProfile = CameraUtils.getBestAvailableCamcorderProfileForResolutionPreset(cameraName, preset)
+        recordingProfile = CameraUtils.getBestAvailableCamcorderProfileForResolutionPreset(activity, cameraName, preset)
+        Log.i(TAG, "Selected recording profile ${recordingProfile.videoFrameWidth}x${recordingProfile.videoFrameHeight}")
         captureSize = Size(recordingProfile.videoFrameWidth, recordingProfile.videoFrameHeight)
-        previewSize = CameraUtils.computeBestPreviewSize(cameraName, preset)
+        previewSize = CameraUtils.computeBestPreviewSize(activity, cameraName, preset)
 
         // Data for streaming, different than the recording data.
         val streamPreset = ResolutionPreset.valueOf(streamingPreset!!)
-        streamingProfile = CameraUtils.getBestAvailableCamcorderProfileForResolutionPreset(cameraName, streamPreset)
+        streamingProfile = CameraUtils.getBestAvailableCamcorderProfileForResolutionPreset(activity, cameraName, streamPreset)
     }
 
     override fun onAuthSuccessRtmp() {
