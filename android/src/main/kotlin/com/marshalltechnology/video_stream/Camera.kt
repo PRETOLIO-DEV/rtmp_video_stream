@@ -69,14 +69,13 @@ class Camera(
             rtmpCamera!!.stopStream()
             rtmpCamera = null
         }
-        isPortrait = true
         Log.i(TAG, "prepareCameraForRecordAndStream(audio: " + audio + " opengl=" + useOpenGL+ ", portrait: " + isPortrait +   ", currentOrientation: " + currentOrientation + ", mediaOrientation: " + mediaOrientation
          + ", frontfacing: " + isFrontFacing + " )" )
         rtmpCamera = RtmpCameraConnector(
                 context = activity!!.applicationContext!!,
                 useOpenGL = useOpenGL,
                 useAudio = audio,
-                isPortrait =  isPortrait,
+                isPortrait =  true,
                 connectChecker = this)
 
         // Turn on audio if it is requested.
@@ -91,8 +90,10 @@ class Camera(
         }
 
         rtmpCamera!!.prepareVideo(
-                if (!isPortrait) streamingProfile.videoFrameWidth else streamingProfile.videoFrameHeight,
-                if (!isPortrait) streamingProfile.videoFrameHeight else streamingProfile.videoFrameWidth,
+                //if (!isPortrait) streamingProfile.videoFrameWidth else
+                    streamingProfile.videoFrameHeight,
+                //if (!isPortrait) streamingProfile.videoFrameHeight else
+                    streamingProfile.videoFrameWidth,
                 fps,
                 bitrateToUse,
                 !useOpenGL,
