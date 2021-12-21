@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
@@ -315,12 +316,26 @@ class CameraController extends ValueNotifier<CameraValue> {
   }
 
   Future<void> audio(bool enable) async {
-    await _channel.invokeMapMethod<String, dynamic>(
-      'mute',
-      <String, dynamic>{
-        'mute': enable
-      },
-    );
+    try {
+      if(Platform.isAndroid){
+        await _channel.invokeMapMethod<String, dynamic>(
+          'mute',
+          <String, dynamic>{
+            'mute': enable
+          },
+        );
+      }else{
+        if(enable){
+          await _channel.invokeMethod<void>('mute');
+        }else{
+          await _channel.invokeMethod<void>('unmute');
+        }
+      }
+    } catch (e) {
+      print(e);
+      throw e;
+    }
+
   }
 
   Future<void> toggleCamera(String camera, String? url) async {

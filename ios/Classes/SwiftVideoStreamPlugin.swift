@@ -136,6 +136,22 @@ public class SwiftVideoStreamPlugin : NSObject {
     public func isPaused() -> Bool{
         return rtmpStream.paused
     }
+
+    public func muteAudio() {
+        rtmpStream.audioSettings = [
+            .muted: true, // mute audio
+            .bitrate: 32 * 1000,
+        ]
+        //rtmpStream.appendSampleBuffer( buffer, withType: .audio)
+    }
+
+    public func unMuteAudio() {
+        rtmpStream.audioSettings = [
+            .muted: false, // mute audio
+            .bitrate: 32 * 1000,
+        ]
+        //rtmpStream.appendSampleBuffer( buffer, withType: .audio)
+    }
     
     
     @objc
@@ -183,6 +199,7 @@ public class SwiftVideoStreamPlugin : NSObject {
     public func addAudioData(buffer: CMSampleBuffer) {
         rtmpStream.appendSampleBuffer( buffer, withType: .audio)
     }
+
     
     @objc
     public func close() {

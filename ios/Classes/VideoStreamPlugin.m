@@ -952,6 +952,12 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
     } else if ([@"resumeVideoStreaming" isEqualToString:call.method]) {
         [_camera resumeVideoStreaming];
         result(nil);
+    } else if ([@"mute" isEqualToString:call.method]) {
+        [_camera muteAudio];
+        result(nil);
+    } else if ([@"unmute" isEqualToString:call.method]) {
+        [_camera unMuteAudio];
+        result(nil);
     } else if ([@"getStreamStatistics" isEqualToString:call.method]) {
         NSDictionary *dict = [_camera getStreamStatistics];
         result(dict);
