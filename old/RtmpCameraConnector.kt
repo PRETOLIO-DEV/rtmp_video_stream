@@ -143,9 +143,10 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val useA
                              -1): Boolean {
         pausedStreaming = false
         pausedRecording = false
+        Log.d("VideoEncoder", "width: $width height: $height")
         videoEncoder = VideoEncoder(
-            this, 750, 800 , fps, bitrate, if (useOpenGL) 0 else rotation, hardwareRotation, iFrameInterval, FormatVideoEncoder.SURFACE, avcProfile, avcProfileLevel)
-//        this, width, height, fps, bitrate, if (useOpenGL) 0 else rotation, hardwareRotation, iFrameInterval, FormatVideoEncoder.SURFACE, avcProfile, avcProfileLevel)
+                this, width, height, fps, bitrate, if (useOpenGL) 0 else rotation, hardwareRotation,
+                iFrameInterval, FormatVideoEncoder.SURFACE, avcProfile, avcProfileLevel)
 
         val result = videoEncoder!!.prepare()
         if (useOpenGL) {
@@ -189,8 +190,8 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val useA
      * doesn't support any configuration seated or your device hasn't a AAC encoder).
      */
     @JvmOverloads
-    fun prepareAudio(bitrate: Int = 64 * 1024, sampleRate: Int = 32000, isStereo: Boolean = true, echoCanceler: Boolean = false,
-                     noiseSuppressor: Boolean = false): Boolean {
+    fun prepareAudio(bitrate: Int = 64 * 1024, sampleRate: Int = 32000, isStereo: Boolean = true,
+                     echoCanceler: Boolean = false, noiseSuppressor: Boolean = false): Boolean {
         microphoneManager!!.createMicrophone(sampleRate, isStereo, echoCanceler, noiseSuppressor)
         prepareAudioRtp(isStereo, sampleRate)
         return audioEncoder!!.prepareAudioEncoder(bitrate, sampleRate, isStereo,
@@ -203,7 +204,9 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val useA
      */
     fun setForce(forceVideo: Force, forceAudio: Force) {
         videoEncoder!!.force = forceVideo
-        audioEncoder!!.setForce(forceAudio)
+        if(useAudio){
+            audioEncoder!!.setForce(forceAudio)
+        }
     }
 
 
@@ -218,6 +221,7 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val useA
      * startPreview for you to resolution seated in @prepareVideo.
      */
     fun startStream(url: String) {
+        Log.i("toggleCamera startStream", isStreaming.toString())
         if (isStreaming) {
             return;
         }
@@ -226,6 +230,7 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val useA
     }
 
     fun startRecord(path: String) {
+
         if (isRecording) {
             return;
         }

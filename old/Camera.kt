@@ -34,12 +34,12 @@ class Camera(
         val activity: Activity?,
         val flutterTexture: SurfaceTextureEntry,
         val dartMessenger: DartMessenger,
-        val cameraName: String,
+        val cameraN: String,
         val resolutionPreset: String?,
         val streamingPreset: String?,
         val enableAudio: Boolean,
         val useOpenGL: Boolean) : ConnectCheckerRtmp {
-    private val isRtmpCompatible: Boolean
+    private var cameraName: String = cameraN
     private val cameraManager: CameraManager
     private val orientationEventListener: OrientationEventListener
     private val isFrontFacing: Boolean
@@ -104,14 +104,13 @@ class Camera(
 
     @SuppressLint("MissingPermission")
     @Throws(CameraAccessException::class)
-    fun open(result: MethodChannel.Result) {
+    fun open(camName: String, result: MethodChannel.Result) {
         pictureImageReader = ImageReader.newInstance(
                 captureSize.width, captureSize.height, ImageFormat.JPEG, 2)
-
-
+        cameraName = camName
         // Used to steam image byte data to dart side.
         cameraManager.openCamera(
-                cameraName,
+                camName,
                 object : CameraDevice.StateCallback() {
                     override fun onOpened(device: CameraDevice) {
                         cameraDevice = device
@@ -122,6 +121,7 @@ class Camera(
                             close()
                             return
                         }
+                        val isRtmpCompatible = CameraUtils.isRtmpCompatible(previewSize)
                         val reply: MutableMap<String, Any> = HashMap()
                         reply["textureId"] = flutterTexture.id()
 
@@ -132,8 +132,8 @@ class Camera(
                             reply["previewWidth"] = previewSize.height
                             reply["previewHeight"] = previewSize.width
                         }*/
-                        reply["previewQuarterTurns"] = currentOrientation / 90
                         reply["isRtmpCompatible"] = isRtmpCompatible
+                        reply["previewQuarterTurns"] = currentOrientation / 90
                         Log.i(TAG, "open: width: " + reply["previewWidth"] + " height: " + reply["previewHeight"] + " currentOrientation: " + currentOrientation + " quarterTurns: " + reply["previewQuarterTurns"])
                         result.success(reply)
                     }
@@ -196,9 +196,9 @@ class Camera(
         val surfaceTexture = flutterTexture.surfaceTexture()
         //if (isPortrait) {
             surfaceTexture.setDefaultBufferSize(previewSize.width, previewSize.height)
-        /*} else {
-            surfaceTexture.setDefaultBufferSize(previewSize.height, previewSize.width)
-        }*/
+        //} else {
+        //    surfaceTexture.setDefaultBufferSize(previewSize.height, previewSize.width)
+        //}
         val flutterSurface = Surface(surfaceTexture)
 
         // The capture request.
@@ -249,6 +249,20 @@ class Camera(
         cameraDevice!!.createCaptureSession(surfaceList, callback, null)
     }
 
+    fun MuteVideo(mute: Boolean, result: MethodChannel.Result) {
+        try {
+            if (mute) {
+                rtmpCamera!!.enableAudio()
+            }else{
+                rtmpCamera!!.disableAudio()
+            }
+            result.success(null)
+        } catch (e: CameraAccessException) {
+            result.error("Mute Failed", e.message, null)
+        } catch (e: IllegalStateException) {
+            result.error("Mute Failed", e.message, null)
+        }
+    }
 
     fun stopVideoRecordingOrStreaming(result: MethodChannel.Result) {
         Log.i("Camera", "stopVideoRecordingOrStreaming ")
@@ -275,20 +289,6 @@ class Camera(
         }
     }
 
-    fun MuteVideo(mute: Boolean, result: MethodChannel.Result) {
-        try {
-            if (mute) {
-                rtmpCamera!!.enableAudio()
-            }else{
-                rtmpCamera!!.disableAudio()
-            }
-            result.success(null)
-        } catch (e: CameraAccessException) {
-            result.error("Mute Failed", e.message, null)
-        } catch (e: IllegalStateException) {
-            result.error("Mute Failed", e.message, null)
-        }
-    }
 
     fun stopVideoStreaming(result: MethodChannel.Result) {
         Log.i("Camera", "stopVideoRecording")
@@ -382,6 +382,22 @@ class Camera(
             cameraCaptureSession = null
         } else {
             Log.v("Camera", "No recoordingCaptureSession to close")
+        }
+    }
+
+    fun closeToggle() {
+        closeCaptureSession()
+        if (cameraDevice != null) {
+            cameraDevice!!.close()
+            cameraDevice = null
+        }
+        if (pictureImageReader != null) {
+            pictureImageReader!!.close()
+            pictureImageReader = null
+        }
+        if (imageStreamReader != null) {
+            imageStreamReader!!.close()
+            imageStreamReader = null
         }
     }
 
@@ -525,7 +541,6 @@ class Camera(
     }
 
 
-
     private val mediaOrientation: Int
          get() {
             val sensorOrientationOffset = if (isFrontFacing)
@@ -578,7 +593,6 @@ class Camera(
         Log.i(TAG, "Selected recording profile ${recordingProfile.videoFrameWidth}x${recordingProfile.videoFrameHeight}")
         captureSize = Size(recordingProfile.videoFrameWidth, recordingProfile.videoFrameHeight)
         previewSize = CameraUtils.computeBestPreviewSize(activity, cameraName, preset)
-        isRtmpCompatible = CameraUtils.isRtmpCompatible(previewSize)
 
         // Data for streaming, different than the recording data.
         val streamPreset = ResolutionPreset.valueOf(streamingPreset!!)

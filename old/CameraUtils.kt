@@ -101,8 +101,7 @@ object CameraUtils {
         val map = characteristics[CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP]!!
         val supportedSet = mutableSetOf<String>()
 
-//        for (size in map.getOutputSizes(ImageFormat.JPEG)) {
-        for (size in map.getOutputSizes(SurfaceTexture::class.java)) {
+        for (size in map.getOutputSizes(ImageFormat.JPEG)) {
             supportedSet.add(size.toString())
         }
 

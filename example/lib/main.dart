@@ -31,7 +31,7 @@ void logError(String code, String message) =>
 class _CameraExampleHomeState extends State<CameraExampleHome>
     with WidgetsBindingObserver, TickerProviderStateMixin {
   CameraController? controller =
-      CameraController(cameras[1], ResolutionPreset.low,androidUseOpenGL: true);
+      CameraController(cameras[1], ResolutionPreset.high,androidUseOpenGL: true);
   String? imagePath;
   String? videoPath;
   String? url;
@@ -103,15 +103,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  toggleCameraDirection() async {
-    if (cameraDirection == 'front') {
-      await controller!.toggleCamera(cameras.first.name, url);
-      cameraDirection = 'back';
-    } else {
-      await controller!.toggleCamera(cameras.last.name, url);
-      cameraDirection = 'front';
-    }
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -228,7 +220,17 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
         .showSnackBar(SnackBar(content: Text(message)));
   }
 
-  void onNewCameraSelected(CameraDescription? cameraDescription) async {
+  toggleCameraDirection() async {
+    if (cameraDirection == 'front') {
+      await onNewCameraSelected(cameras.first);
+      cameraDirection = 'back';
+    } else {
+      await onNewCameraSelected(cameras.last);
+      cameraDirection = 'front';
+    }
+  }
+
+  onNewCameraSelected(CameraDescription? cameraDescription) async {
     if (controller != null) {
       await controller!.dispose();
     }
@@ -237,7 +239,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     }
     controller = CameraController(
       cameraDescription,
-      ResolutionPreset.low,
+      ResolutionPreset.high,
       enableAudio: enableAudio,
       androidUseOpenGL: useOpenGL,
     );
@@ -258,6 +260,9 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
 
     try {
       await controller!.initialize();
+
+      if(streaming) onVideoStreamingButtonPressed();
+
     } on CameraException catch (e) {
       _showCameraException(e);
     }

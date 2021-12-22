@@ -158,7 +158,7 @@ internal class MethodCallHandlerImpl(
                 streamingPreset,
                 enableAudio,
                 enableOpenGL)
-        camera!!.open(result)
+        camera!!.open(cameraName!!, result)
     }
 
     // We move catching CameraAccessException out of onMethodCall because it causes a crash
