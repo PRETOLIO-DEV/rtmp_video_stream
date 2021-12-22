@@ -305,7 +305,7 @@ class CameraController extends ValueNotifier<CameraValue> {
           reply['previewHeight'].toDouble(),
         ),
         previewQuarterTurns: reply['previewQuarterTurns'],
-        isRtmpCompatible: reply['isRtmpCompatible']
+        isRtmpCompatible: true
       );
     } on PlatformException catch (e) {
       throw CameraException(e.code, e.message!);

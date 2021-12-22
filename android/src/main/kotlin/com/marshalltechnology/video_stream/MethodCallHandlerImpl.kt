@@ -107,14 +107,6 @@ internal class MethodCallHandlerImpl(
                     handleException(e, result)
                 }
             }
-            "toggleCamera" -> {
-                try {
-                    Log.i("toggleCamera", call.arguments.toString())
-                    camera!!.toggleCamera(call.argument("url"),call.argument("camera")!!,result)
-                } catch (e: Exception) {
-                    handleException(e, result)
-                }
-            }
             "stopImageStream" -> {
                 try {
                     camera!!.startPreview()

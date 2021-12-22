@@ -39,7 +39,6 @@ class Camera(
         val streamingPreset: String?,
         val enableAudio: Boolean,
         val useOpenGL: Boolean) : ConnectCheckerRtmp {
-    private val isRtmpCompatible: Boolean
     private var cameraName: String = cameraN
     private val cameraManager: CameraManager
     private val orientationEventListener: OrientationEventListener
@@ -132,7 +131,6 @@ class Camera(
                             reply["previewWidth"] = previewSize.height
                             reply["previewHeight"] = previewSize.width
                         }
-                        reply["isRtmpCompatible"] = isRtmpCompatible
                         reply["previewQuarterTurns"] = currentOrientation / 90
                         Log.i(TAG, "open: width: " + reply["previewWidth"] + " height: " + reply["previewHeight"] + " currentOrientation: " + currentOrientation + " quarterTurns: " + reply["previewQuarterTurns"])
                         result.success(reply)
@@ -607,7 +605,7 @@ class Camera(
         Log.i(TAG, "Selected recording profile ${recordingProfile.videoFrameWidth}x${recordingProfile.videoFrameHeight}")
         captureSize = Size(recordingProfile.videoFrameWidth, recordingProfile.videoFrameHeight)
         previewSize = CameraUtils.computeBestPreviewSize(activity, cameraName, preset)
-        isRtmpCompatible = CameraUtils.isRtmpCompatible(previewSize)
+
         // Data for streaming, different than the recording data.
         val streamPreset = ResolutionPreset.valueOf(streamingPreset!!)
         streamingProfile = CameraUtils.getBestAvailableCamcorderProfileForResolutionPreset(activity, cameraName, streamPreset)
