@@ -34,13 +34,12 @@ class Camera(
         val activity: Activity?,
         val flutterTexture: SurfaceTextureEntry,
         val dartMessenger: DartMessenger,
-        val cameraN: String,
+        val cameraName: String,
         val resolutionPreset: String?,
         val streamingPreset: String?,
         val enableAudio: Boolean,
         val useOpenGL: Boolean) : ConnectCheckerRtmp {
-    private val isRtmpCompatible: Boolean
-    private var cameraName: String = cameraN
+        val isRtmpCompatible: Boolean
     private val cameraManager: CameraManager
     private val orientationEventListener: OrientationEventListener
     private val isFrontFacing: Boolean
@@ -77,7 +76,7 @@ class Camera(
                 context = activity!!.applicationContext!!,
                 useOpenGL = useOpenGL,
                 useAudio = audio,
-                isPortrait =  true,
+                isPortrait =  isPortrait,
                 connectChecker = this)
 
         // Turn on audio if it is requested.
@@ -92,10 +91,8 @@ class Camera(
         }
 
         rtmpCamera!!.prepareVideo(
-                //if (!isPortrait) streamingProfile.videoFrameWidth else
-                    streamingProfile.videoFrameHeight,
-                //if (!isPortrait) streamingProfile.videoFrameHeight else
-                    streamingProfile.videoFrameWidth,
+                if (!isPortrait) streamingProfile.videoFrameWidth else streamingProfile.videoFrameHeight,
+                if (!isPortrait) streamingProfile.videoFrameHeight else streamingProfile.videoFrameWidth,
                 fps,
                 bitrateToUse,
                 !useOpenGL,
@@ -105,13 +102,14 @@ class Camera(
 
     @SuppressLint("MissingPermission")
     @Throws(CameraAccessException::class)
-    fun open(camName: String, result: MethodChannel.Result) {
+    fun open(result: MethodChannel.Result) {
         pictureImageReader = ImageReader.newInstance(
                 captureSize.width, captureSize.height, ImageFormat.JPEG, 2)
-        cameraName = camName
+
+
         // Used to steam image byte data to dart side.
         cameraManager.openCamera(
-                camName,
+                cameraName,
                 object : CameraDevice.StateCallback() {
                     override fun onOpened(device: CameraDevice) {
                         cameraDevice = device
@@ -132,8 +130,8 @@ class Camera(
                             reply["previewWidth"] = previewSize.height
                             reply["previewHeight"] = previewSize.width
                         }
-                        reply["isRtmpCompatible"] = isRtmpCompatible
                         reply["previewQuarterTurns"] = currentOrientation / 90
+                        reply["isRtmpCompatible"] = isRtmpCompatible
                         Log.i(TAG, "open: width: " + reply["previewWidth"] + " height: " + reply["previewHeight"] + " currentOrientation: " + currentOrientation + " quarterTurns: " + reply["previewQuarterTurns"])
                         result.success(reply)
                     }
@@ -194,11 +192,11 @@ class Camera(
 
         // Build Flutter surface to render to
         val surfaceTexture = flutterTexture.surfaceTexture()
-        //if (isPortrait) {
+        if (isPortrait) {
             surfaceTexture.setDefaultBufferSize(previewSize.width, previewSize.height)
-/*        } else {
+        } else {
             surfaceTexture.setDefaultBufferSize(previewSize.height, previewSize.width)
-        }*/
+        }
         val flutterSurface = Surface(surfaceTexture)
 
         // The capture request.
@@ -247,20 +245,6 @@ class Camera(
 
         // Start the session
         cameraDevice!!.createCaptureSession(surfaceList, callback, null)
-    }
-
-    fun toggleCamera(url: String?, camName: String, result: MethodChannel.Result) {
-        try {
-            closeToggle()
-            open(camName, result)
-            Log.i("toggleCamera startStream", (url != null).toString())
-            //if(url != null)
-            //    rtmpCamera!!.startStream(url)
-        } catch (e: CameraAccessException) {
-            result.error("toggleCamera Failed", e.message, null)
-        } catch (e: IllegalStateException) {
-            result.error("toggleCamera Failed", e.message, null)
-        }
     }
 
     fun MuteVideo(mute: Boolean, result: MethodChannel.Result) {
@@ -396,22 +380,6 @@ class Camera(
             cameraCaptureSession = null
         } else {
             Log.v("Camera", "No recoordingCaptureSession to close")
-        }
-    }
-
-    fun closeToggle() {
-        closeCaptureSession()
-        if (cameraDevice != null) {
-            cameraDevice!!.close()
-            cameraDevice = null
-        }
-        if (pictureImageReader != null) {
-            pictureImageReader!!.close()
-            pictureImageReader = null
-        }
-        if (imageStreamReader != null) {
-            imageStreamReader!!.close()
-            imageStreamReader = null
         }
     }
 
@@ -608,6 +576,7 @@ class Camera(
         captureSize = Size(recordingProfile.videoFrameWidth, recordingProfile.videoFrameHeight)
         previewSize = CameraUtils.computeBestPreviewSize(activity, cameraName, preset)
         isRtmpCompatible = CameraUtils.isRtmpCompatible(previewSize)
+
         // Data for streaming, different than the recording data.
         val streamPreset = ResolutionPreset.valueOf(streamingPreset!!)
         streamingProfile = CameraUtils.getBestAvailableCamcorderProfileForResolutionPreset(activity, cameraName, streamPreset)

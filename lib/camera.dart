@@ -175,6 +175,7 @@ class CameraValue {
   final bool? isStreamingImages;
   final bool _isRecordingPaused;
   final bool _isStreamingPaused;
+  final bool isRtmpCompatible;
   final String? errorDescription;
   final Size? previewSize;
   final int? previewQuarterTurns;
@@ -185,6 +186,7 @@ class CameraValue {
     this.errorDescription,
     this.previewSize,
     this.previewQuarterTurns,
+    required this.isRtmpCompatible,
     required this.isRecordingVideo,
     required this.isTakingPicture,
     required this.isStreamingImages,
@@ -204,6 +206,7 @@ class CameraValue {
           isRecordingPaused: false,
           isStreamingPaused: false,
           previewQuarterTurns: 0,
+          isRtmpCompatible: false,
         );
 
   bool get isRecordingPaused => isRecordingVideo && _isRecordingPaused;
@@ -225,10 +228,12 @@ class CameraValue {
     int? previewQuarterTurns,
     bool? isRecordingPaused,
     bool? isStreamingPaused,
+    bool? isRtmpCompatible,
   }) {
     return CameraValue(
       isInitialized: isInitialized ?? this.isInitialized,
       errorDescription: errorDescription ?? '',
+      isRtmpCompatible: isRtmpCompatible ?? this.isRtmpCompatible,
       previewSize: previewSize ?? this.previewSize,
       previewQuarterTurns: previewQuarterTurns ?? this.previewQuarterTurns,
       isRecordingVideo: isRecordingVideo ?? this.isRecordingVideo,
@@ -246,6 +251,7 @@ class CameraValue {
         'isRecordingVideo: $isRecordingVideo, '
         'isRecordingVideo: $isRecordingVideo, '
         'isInitialized: $isInitialized, '
+        'isRtmpCompatible: $isRtmpCompatible, '
         'errorDescription: $errorDescription, '
         'previewSize: $previewSize, '
         'previewQuarterTurns: $previewQuarterTurns, '
@@ -299,6 +305,7 @@ class CameraController extends ValueNotifier<CameraValue> {
           reply['previewHeight'].toDouble(),
         ),
         previewQuarterTurns: reply['previewQuarterTurns'],
+        isRtmpCompatible: reply['isRtmpCompatible']
       );
     } on PlatformException catch (e) {
       throw CameraException(e.code, e.message!);

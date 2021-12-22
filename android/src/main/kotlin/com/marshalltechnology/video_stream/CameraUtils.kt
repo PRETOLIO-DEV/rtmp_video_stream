@@ -38,6 +38,13 @@ object CameraUtils {
         ResolutionPreset.medium to 4,
         ResolutionPreset.low to 5
     )
+    val rtmpSupportedRes = setOf(
+//        "1920x1080",
+        "1280x720",
+        "854x480",
+        "640x360",
+        "426x240"
+    )
 
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     fun computeBestPreviewSize(context: Context, cameraName: String, preset: ResolutionPreset): Size {
@@ -47,6 +54,11 @@ object CameraUtils {
         }
         val profile = getBestAvailableCamcorderProfileForResolutionPreset(context, cameraName, preset)
         return Size(profile.videoFrameWidth, profile.videoFrameHeight)
+    }
+
+    fun isRtmpCompatible(size: Size): Boolean {
+        val profileKey = "${size.width}x${size.height}"
+        return rtmpSupportedRes.contains(profileKey)
     }
 
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
@@ -89,12 +101,13 @@ object CameraUtils {
         val map = characteristics[CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP]!!
         val supportedSet = mutableSetOf<String>()
 
-        for (size in map.getOutputSizes(SurfaceTexture::class.java)) {
+        for (size in map.getOutputSizes(ImageFormat.JPEG)) {
             supportedSet.add(size.toString())
         }
 
         Log.d("CameraUtils", "Supported set of modes for SurfaceTexture: $supportedSet")
         val startIndex = qualityStartLookupProfileMap[preset]
+        var fallbackProfile: CamcorderProfile? = null
 
         if (startIndex == null)
             throw IllegalArgumentException("No capture session available for current capture session.")
@@ -103,14 +116,27 @@ object CameraUtils {
             if (CamcorderProfile.hasProfile(cameraId, profileArray[i])) {
                 val profile = CamcorderProfile.get(cameraId, profileArray[i])
                 val profileKey = "${profile.videoFrameWidth}x${profile.videoFrameHeight}"
+                var error: String? = null
 
                 if (supportedSet.contains(profileKey)) {
-                    Log.d("CameraUtils", "Profile: $profileKey passed")
-                    return profile
+                    if (fallbackProfile == null)
+                        fallbackProfile = profile
+
+                    if (rtmpSupportedRes.contains(profileKey)) {
+                        Log.d("CameraUtils", "Profile: $profileKey passed")
+                        return profile
+                    } else
+                        error = "unsupported by RTMP"
                 } else
-                    Log.d("CameraUtils", "Trying profile: $profileKey failed")
+                    error = "unsupported by JPEG format"
+
+                if (error != null)
+                    Log.d("CameraUtils", "Trying profile: $profileKey failed ($error)")
             }
         }
+
+        if (fallbackProfile != null)
+            return fallbackProfile
 
         throw IllegalArgumentException("No capture session available for current capture session.")
 /*
