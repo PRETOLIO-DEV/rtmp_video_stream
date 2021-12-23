@@ -368,7 +368,7 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val useA
         }
 */
 
-        srsFlvMuxer.setVideoResolution(videoEncoder!!.width, videoEncoder!!.height)
+        srsFlvMuxer.setVideoResolution(videoEncoder!!.height, videoEncoder!!.width)
         srsFlvMuxer.start(url)
     }
 
