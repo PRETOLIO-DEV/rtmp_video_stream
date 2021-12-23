@@ -360,11 +360,15 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val useA
     }
 
     fun startStreamRtp(url: String) {
+/*
         if (videoEncoder!!.rotation == 90 || videoEncoder!!.rotation == 270) {
             srsFlvMuxer.setVideoResolution(videoEncoder!!.height, videoEncoder!!.width)
         } else {
             srsFlvMuxer.setVideoResolution(videoEncoder!!.width, videoEncoder!!.height)
         }
+*/
+
+        srsFlvMuxer.setVideoResolution(videoEncoder!!.width, videoEncoder!!.height)
         srsFlvMuxer.start(url)
     }
 
