@@ -216,8 +216,8 @@ class CameraValue {
 
   bool get isStreamingPaused => isStreamingVideoRtmp && _isStreamingPaused;
 
-  //double get aspectRatio => previewSize!.height / previewSize!.width;
-  double get aspectRatio => previewSize!.width / previewSize!.height;
+  double get aspectRatio => previewSize!.height / previewSize!.width;
+  //double get aspectRatio => previewSize!.width / previewSize!.height;
 
   bool get hasError => errorDescription != '';
 
