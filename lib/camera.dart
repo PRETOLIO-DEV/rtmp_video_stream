@@ -87,7 +87,10 @@ class CameraDescription {
   final CameraLensDirection lensDirection;
   final int sensorOrientation;
 
-  CameraDescription({required this.name, required this.lensDirection, required this.sensorOrientation});
+  CameraDescription(
+      {required this.name,
+      required this.lensDirection,
+      required this.sensorOrientation});
 
   @override
   bool operator ==(Object o) {
@@ -155,15 +158,16 @@ class CameraPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return controller.value.isInitialized
-      ? controller.value.previewSize!.width < controller.value.previewSize!.height 
-        ? RotatedBox(
-          quarterTurns: controller.value.previewQuarterTurns!,
-          child: Texture(
-            textureId: controller._textureId!,
-          ),
-        ) 
-        : Texture(textureId: controller._textureId!)
-      : Container();
+        ? controller.value.previewSize!.width <
+                controller.value.previewSize!.height
+            ? RotatedBox(
+                quarterTurns: controller.value.previewQuarterTurns!,
+                child: Texture(
+                  textureId: controller._textureId!,
+                ),
+              )
+            : Texture(textureId: controller._textureId!)
+        : Container();
   }
 }
 
@@ -179,7 +183,6 @@ class CameraValue {
   final String? errorDescription;
   final Size? previewSize;
   final int? previewQuarterTurns;
-
 
   CameraValue({
     required this.isInitialized,
@@ -213,7 +216,8 @@ class CameraValue {
 
   bool get isStreamingPaused => isStreamingVideoRtmp && _isStreamingPaused;
 
-  double get aspectRatio => previewSize!.height / previewSize!.width;
+  //double get aspectRatio => previewSize!.height / previewSize!.width;
+  double get aspectRatio => previewSize!.width / previewSize!.height;
 
   bool get hasError => errorDescription != '';
 
@@ -292,26 +296,25 @@ class CameraController extends ValueNotifier<CameraValue> {
         <String, dynamic>{
           'cameraName': description!.name,
           'resolutionPreset': serializeResolutionPreset(resolutionPreset!),
-          'streamingPreset':serializeResolutionPreset(streamingPreset ?? resolutionPreset!),
+          'streamingPreset':
+              serializeResolutionPreset(streamingPreset ?? resolutionPreset!),
           'enableAudio': enableAudio,
           'enableAndroidOpenGL': androidUseOpenGL ?? false
         },
       );
       _textureId = reply!['textureId'];
       value = value.copyWith(
-        isInitialized: true,
-        previewSize: Size(
-          reply['previewWidth'].toDouble(),
-          reply['previewHeight'].toDouble(),
-        ),
-        previewQuarterTurns: reply['previewQuarterTurns'],
-        isRtmpCompatible: reply['isRtmpCompatible']
-      );
+          isInitialized: true,
+          previewSize: Size(
+            reply['previewWidth'].toDouble(),
+            reply['previewHeight'].toDouble(),
+          ),
+          previewQuarterTurns: reply['previewQuarterTurns'],
+          isRtmpCompatible: reply['isRtmpCompatible']);
     } on PlatformException catch (e) {
       throw CameraException(e.code, e.message!);
     }
-    _eventSubscription = EventChannel(
-            'video_stream/cameraEvents$_textureId')
+    _eventSubscription = EventChannel('video_stream/cameraEvents$_textureId')
         .receiveBroadcastStream()
         .listen(_listener);
     _creatingCompleter!.complete();
@@ -324,17 +327,15 @@ class CameraController extends ValueNotifier<CameraValue> {
 
   Future<void> audio(bool enable) async {
     try {
-      if(Platform.isAndroid){
+      if (Platform.isAndroid) {
         await _channel.invokeMapMethod<String, dynamic>(
           'mute',
-          <String, dynamic>{
-            'mute': enable
-          },
+          <String, dynamic>{'mute': enable},
         );
-      }else{
-        if(enable){
+      } else {
+        if (enable) {
           await _channel.invokeMethod<void>('mute');
-        }else{
+        } else {
           await _channel.invokeMethod<void>('unmute');
         }
       }
@@ -342,16 +343,12 @@ class CameraController extends ValueNotifier<CameraValue> {
       print(e);
       throw e;
     }
-
   }
 
   Future<void> toggleCamera(String camera, String? url) async {
     await _channel.invokeMapMethod<String, dynamic>(
       'toggleCamera',
-      <String, dynamic>{
-        'camera': camera,
-        'url': url
-      },
+      <String, dynamic>{'camera': camera, 'url': url},
     );
   }
 
@@ -382,7 +379,8 @@ class CameraController extends ValueNotifier<CameraValue> {
         value = value.copyWith(isStreamingVideoRtmp: false);
         break;
       case 'rotation_update':
-        value = value.copyWith(previewQuarterTurns: int.parse(event['errorDescription']));
+        value = value.copyWith(
+            previewQuarterTurns: int.parse(event['errorDescription']));
         break;
     }
   }
@@ -477,7 +475,8 @@ class CameraController extends ValueNotifier<CameraValue> {
     }
 
     try {
-      var data = await _channel.invokeMapMethod<String, dynamic>('getStreamStatistics');
+      var data = await _channel
+          .invokeMapMethod<String, dynamic>('getStreamStatistics');
       return StreamStatistics(
         sentAudioFrames: data!["sentAudioFrames"],
         sentVideoFrames: data["sentVideoFrames"],
@@ -500,7 +499,9 @@ class CameraController extends ValueNotifier<CameraValue> {
   ///
   /// Throws a [CameraException] if the capture fails.
   Future<void> startVideoStreaming(String url,
-      {int bitrate = 1200 * 1024, required bool androidUseOpenGL, required bool audio}) async {
+      {int bitrate = 1200 * 1024,
+      required bool androidUseOpenGL,
+      required bool audio}) async {
     if (!value.isInitialized || _isDisposed!) {
       throw CameraException(
         'Uninitialized CameraController',
@@ -556,7 +557,8 @@ class CameraController extends ValueNotifier<CameraValue> {
       );
     }
     try {
-      value = value.copyWith(isStreamingVideoRtmp: false, isRecordingVideo: false);
+      value =
+          value.copyWith(isStreamingVideoRtmp: false, isRecordingVideo: false);
       print("Stop video streaming call");
       await _channel.invokeMethod<void>(
         'stopRecordingOrStreaming',
