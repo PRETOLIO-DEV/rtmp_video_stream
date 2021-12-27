@@ -9,7 +9,7 @@ import ReplayKit
 import VideoToolbox
 
 @objc
-public class SwiftVideoStreamPlugin : NSObject {
+public class FlutterRTMPStreaming : NSObject {
     private var rtmpConnection = RTMPConnection()
     private var rtmpStream: RTMPStream!
     private var url: String? = nil
@@ -28,19 +28,14 @@ public class SwiftVideoStreamPlugin : NSObject {
         rtmpStream = RTMPStream(connection: rtmpConnection)
         rtmpStream.captureSettings = [
             .sessionPreset: AVCaptureSession.Preset.hd1280x720,
-            .continuousAutofocus: false,
-            .continuousExposure: false
+            .continuousAutofocus: true,
+            .continuousExposure: true
         ]
         rtmpConnection.addEventListener(.rtmpStatus, selector:#selector(rtmpStatusHandler), observer: self)
         rtmpConnection.addEventListener(.ioError, selector: #selector(rtmpErrorHandler), observer: self)
         
         let uri = URL(string: url)
         self.name = uri?.pathComponents.last
-        if let query = uri?.query {
-            if let lname = name {
-                name = Optional(lname + "?" + query)
-            }
-        }
         var bits = url.components(separatedBy: "/")
         bits.removeLast()
         self.url = bits.joined(separator: "/")
@@ -136,22 +131,6 @@ public class SwiftVideoStreamPlugin : NSObject {
     public func isPaused() -> Bool{
         return rtmpStream.paused
     }
-
-    public func muteAudio() {
-        rtmpStream.audioSettings = [
-            .muted: true, // mute audio
-            .bitrate: 32 * 1000,
-        ]
-        //rtmpStream.appendSampleBuffer( buffer, withType: .audio)
-    }
-
-    public func unMuteAudio() {
-        rtmpStream.audioSettings = [
-            .muted: false, // mute audio
-            .bitrate: 32 * 1000,
-        ]
-        //rtmpStream.appendSampleBuffer( buffer, withType: .audio)
-    }
     
     
     @objc
@@ -199,7 +178,6 @@ public class SwiftVideoStreamPlugin : NSObject {
     public func addAudioData(buffer: CMSampleBuffer) {
         rtmpStream.appendSampleBuffer( buffer, withType: .audio)
     }
-
     
     @objc
     public func close() {
@@ -240,16 +218,3 @@ class MyRTMPStreamQoSDelagate: RTMPStreamDelegate {
     func clear() {
     }
 }
-
-
-//public class SwiftVideoStreamPlugin: NSObject, FlutterPlugin {
-//  public static func register(with registrar: FlutterPluginRegistrar) {
-//    let channel = FlutterMethodChannel(name: "video_stream", binaryMessenger: registrar.messenger())
-//    let instance = SwiftVideoStreamPlugin()
-//    registrar.addMethodCallDelegate(instance, channel: channel)
-//  }
-//
-//  public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-//    result("iOS " + UIDevice.current.systemVersion)
-//  }
-//}

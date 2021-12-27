@@ -1,4 +1,4 @@
-package com.marshalltechnology.video_stream
+package old
 
 import android.content.Context
 import android.hardware.camera2.CameraCharacteristics
@@ -70,11 +70,8 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val useA
     private val fpsListener = FpsListener()
 
     init {
-
         microphoneManager = MicrophoneManager(this)
         audioEncoder = AudioEncoder(this)
-
-
 
         srsFlvMuxer = SrsFlvMuxer(this)
         fpsListener.setCallback(this)
@@ -143,10 +140,10 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val useA
                              -1): Boolean {
         pausedStreaming = false
         pausedRecording = false
-        Log.d("VideoEncoder", "width: $width height: $height")
         videoEncoder = VideoEncoder(
-                this, width, height, fps, bitrate, if (useOpenGL) 0 else rotation, hardwareRotation,
-                iFrameInterval, FormatVideoEncoder.SURFACE, avcProfile, avcProfileLevel)
+//          this, 750, 800 , fps, bitrate, if (useOpenGL) 0 else rotation, hardwareRotation, iFrameInterval, FormatVideoEncoder.SURFACE, avcProfile, avcProfileLevel)
+            this, width, height, fps, bitrate, if (useOpenGL) 0 else rotation, hardwareRotation, iFrameInterval, FormatVideoEncoder.SURFACE, avcProfile, avcProfileLevel)
+//          this, height, width, fps, bitrate, if (useOpenGL) 0 else rotation, hardwareRotation, iFrameInterval, FormatVideoEncoder.SURFACE, avcProfile, avcProfileLevel)
 
         val result = videoEncoder!!.prepare()
         if (useOpenGL) {
@@ -166,9 +163,15 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val useA
 
     private fun prepareGlInterface(rotation: Int) {
         Log.i(TAG, "prepareGlInterface " + rotation + " " + isPortrait);
-        this.glInterface.setEncoderSize(videoEncoder!!.width, videoEncoder!!.height)
-        this.glInterface.setRotation(rotation)
-        this.glInterface.start()
+        //this.glInterface.setEncoderSize(videoEncoder!!.width, videoEncoder!!.height)
+        if (videoEncoder.getRotation() == 90 || videoEncoder.getRotation() == 270) {
+            glInterface.setEncoderSize(videoEncoder.getHeight(), videoEncoder.getWidth());
+        } else {
+            glInterface.setEncoderSize(videoEncoder.getWidth(), videoEncoder.getHeight());
+        }
+        //glInterface.setRotation(rotation)
+        glInterface.setRotation(0)
+        glInterface.start()
     }
 
     /**
@@ -190,8 +193,8 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val useA
      * doesn't support any configuration seated or your device hasn't a AAC encoder).
      */
     @JvmOverloads
-    fun prepareAudio(bitrate: Int = 64 * 1024, sampleRate: Int = 32000, isStereo: Boolean = true,
-                     echoCanceler: Boolean = false, noiseSuppressor: Boolean = false): Boolean {
+    fun prepareAudio(bitrate: Int = 64 * 1024, sampleRate: Int = 32000, isStereo: Boolean = true, echoCanceler: Boolean = false,
+                     noiseSuppressor: Boolean = false): Boolean {
         microphoneManager!!.createMicrophone(sampleRate, isStereo, echoCanceler, noiseSuppressor)
         prepareAudioRtp(isStereo, sampleRate)
         return audioEncoder!!.prepareAudioEncoder(bitrate, sampleRate, isStereo,
@@ -204,9 +207,7 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val useA
      */
     fun setForce(forceVideo: Force, forceAudio: Force) {
         videoEncoder!!.force = forceVideo
-        if(useAudio){
-            audioEncoder!!.setForce(forceAudio)
-        }
+        audioEncoder!!.setForce(forceAudio)
     }
 
 
@@ -221,7 +222,6 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val useA
      * startPreview for you to resolution seated in @prepareVideo.
      */
     fun startStream(url: String) {
-        Log.i("toggleCamera startStream", isStreaming.toString())
         if (isStreaming) {
             return;
         }
@@ -230,7 +230,6 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val useA
     }
 
     fun startRecord(path: String) {
-
         if (isRecording) {
             return;
         }
@@ -369,6 +368,7 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val useA
         } else {
             srsFlvMuxer.setVideoResolution(videoEncoder!!.width, videoEncoder!!.height)
         }
+
         srsFlvMuxer.start(url)
     }
 

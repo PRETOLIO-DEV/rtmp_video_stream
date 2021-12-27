@@ -1,6 +1,5 @@
 package com.marshalltechnology.video_stream
 
-import android.graphics.ImageFormat
 import android.media.MediaCodec
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
@@ -25,7 +24,7 @@ import java.util.List
  * Encodes the data going over the wire to the backend system, this handles talking
  * with the media encoder framework and shuttling this over to the rtmp system itself.
  */
-class VideoEncoder(
+class AppVideoEncoder(
         val getVideoData: GetVideoData,
         val width: Int,
         val height: Int,
@@ -36,7 +35,8 @@ class VideoEncoder(
         val iFrameInterval: Int,
         val formatVideoEncoder: FormatVideoEncoder,
         val avcProfile: Int = -1,
-        val avcProfileLevel: Int = -1) {
+        val avcProfileLevel: Int = -1,
+        val aspectRatio: Double = 1.0) {
     private var spsPpsSetted = false
 
     // surface to buffer encoder
@@ -80,10 +80,13 @@ class VideoEncoder(
                 return false
             }
             val videoFormat: MediaFormat
-            //if you dont use mediacodec rotation you need swap width and height in rotation 90 or 270
+            // if you don't use mediacodec rotation you need swap width and height in rotation 90 or 270
             // for correct encoding resolution
-            val resolution: String = "" + width + "x" + height
-            videoFormat = MediaFormat.createVideoFormat(type, width, height)
+            val ratioWidth = width
+            val ratioHeight = height
+            val resolution: String = "" + ratioWidth + "x" + ratioHeight
+
+            videoFormat = MediaFormat.createVideoFormat(type, ratioWidth, ratioHeight)
             Log.i(TAG, "Prepare video info: " + videoEncoder!!.name.toString() + ", " + resolution)
             videoFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, videoEncoder!!.getFormatCodec())
             videoFormat.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, 0)
@@ -91,8 +94,6 @@ class VideoEncoder(
             videoFormat.setInteger(MediaFormat.KEY_FRAME_RATE, fps)
             videoFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, iFrameInterval)
             videoFormat.setInteger(MediaFormat.KEY_ROTATION, rotation)
-            videoFormat.setInteger(MediaFormat.KEY_PIXEL_ASPECT_RATIO_WIDTH, width)
-            videoFormat.setInteger(MediaFormat.KEY_PIXEL_ASPECT_RATIO_HEIGHT, height)
             if (this.avcProfile > 0 && this.avcProfileLevel > 0) {
                 // MediaFormat.KEY_PROFILE, API > 21
                 videoFormat.setInteger(MediaFormat.KEY_PROFILE, this.avcProfile)

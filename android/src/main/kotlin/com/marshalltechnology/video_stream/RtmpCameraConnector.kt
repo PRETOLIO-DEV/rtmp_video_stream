@@ -1,16 +1,12 @@
 package com.marshalltechnology.video_stream
 
 import android.content.Context
-import android.hardware.camera2.CameraCharacteristics
-import android.media.ImageReader
 import android.media.MediaCodec
 import android.media.MediaFormat
 import android.os.Build
-import android.util.Size
-import android.view.MotionEvent
+import android.util.Log
+import android.util.SparseIntArray
 import android.view.Surface
-import android.view.SurfaceView
-import android.view.TextureView
 import androidx.annotation.RequiresApi
 import com.pedro.encoder.Frame
 import com.pedro.encoder.audio.AudioEncoder
@@ -18,35 +14,24 @@ import com.pedro.encoder.audio.GetAacData
 import com.pedro.encoder.input.audio.CustomAudioEffect
 import com.pedro.encoder.input.audio.GetMicrophoneData
 import com.pedro.encoder.input.audio.MicrophoneManager
-import com.pedro.encoder.input.video.CameraHelper
-import com.pedro.encoder.input.video.CameraHelper.Facing
-import com.pedro.encoder.input.video.CameraOpenException
 import com.pedro.encoder.utils.CodecUtil.Force
 import com.pedro.encoder.video.FormatVideoEncoder
 import com.pedro.encoder.video.GetVideoData
 import com.pedro.rtplibrary.util.FpsListener
 import com.pedro.rtplibrary.util.RecordController
-import com.pedro.rtplibrary.view.GlInterface
-import com.pedro.rtplibrary.view.LightOpenGlView
 import com.pedro.rtplibrary.view.OffScreenGlThread
-import com.pedro.rtplibrary.view.OpenGlView
 import net.ossrs.rtmp.ConnectCheckerRtmp
 import net.ossrs.rtmp.SrsFlvMuxer
-import java.io.IOException
 import java.nio.ByteBuffer
-import java.util.*
-import android.util.Log
-import android.util.SparseIntArray
 
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val useAudio: Boolean,
-      val isPortrait: Boolean, val connectChecker: ConnectCheckerRtmp) :
+class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val isPortrait: Boolean, val connectChecker: ConnectCheckerRtmp) :
         GetAacData, GetVideoData, GetMicrophoneData, FpsListener.Callback,
-        RecordController.Listener,  ConnectCheckerRtmp {
-    private var videoEncoder: VideoEncoder? = null
-    private var microphoneManager: MicrophoneManager? = null
-    private var audioEncoder: AudioEncoder? = null
+        RecordController.Listener, ConnectCheckerRtmp {
+    private var videoEncoder: AppVideoEncoder? = null
+    private var microphoneManager: MicrophoneManager
+    private var audioEncoder: AudioEncoder
     private var srsFlvMuxer: SrsFlvMuxer
     private var curFps: Int
     private var pausedStreaming: Boolean = false
@@ -70,12 +55,8 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val useA
     private val fpsListener = FpsListener()
 
     init {
-
         microphoneManager = MicrophoneManager(this)
         audioEncoder = AudioEncoder(this)
-
-
-
         srsFlvMuxer = SrsFlvMuxer(this)
         fpsListener.setCallback(this)
         curFps = 0
@@ -92,7 +73,7 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val useA
      * Set an audio effect modifying microphone's PCM buffer.
      */
     fun setCustomAudioEffect(customAudioEffect: CustomAudioEffect?) {
-        microphoneManager!!.setCustomAudioEffect(customAudioEffect)
+        microphoneManager.setCustomAudioEffect(customAudioEffect)
     }
 
     /**
@@ -115,7 +96,7 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val useA
     val inputSurface: Surface
         get() {
             if (useOpenGL) {
-                return glInterface.getSurface()
+                return glInterface.surface
             } else {
                 return videoEncoder!!.surface!!
             }
@@ -140,17 +121,26 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val useA
     @JvmOverloads
     fun prepareVideo(width: Int, height: Int, fps: Int, bitrate: Int, hardwareRotation: Boolean,
                      iFrameInterval: Int, rotation: Int, avcProfile: Int = -1, avcProfileLevel: Int =
-                             -1): Boolean {
+                             -1, aspectRatio: Double = 1.0): Boolean {
         pausedStreaming = false
         pausedRecording = false
-        videoEncoder = VideoEncoder(
-//          this, 750, 800 , fps, bitrate, if (useOpenGL) 0 else rotation, hardwareRotation, iFrameInterval, FormatVideoEncoder.SURFACE, avcProfile, avcProfileLevel)
-            this, width, height, fps, bitrate, if (useOpenGL) 0 else rotation, hardwareRotation, iFrameInterval, FormatVideoEncoder.SURFACE, avcProfile, avcProfileLevel)
-//          this, height, width, fps, bitrate, if (useOpenGL) 0 else rotation, hardwareRotation, iFrameInterval, FormatVideoEncoder.SURFACE, avcProfile, avcProfileLevel)
+        videoEncoder = AppVideoEncoder(
+                this,
+                width,
+                height,
+                fps,
+                bitrate,
+                if (useOpenGL) 0 else rotation,
+                hardwareRotation,
+                iFrameInterval,
+                FormatVideoEncoder.SURFACE,
+                avcProfile,
+                avcProfileLevel,
+                aspectRatio)
 
         val result = videoEncoder!!.prepare()
         if (useOpenGL) {
-            prepareGlInterface(ORIENTATIONS[rotation])
+            prepareGlInterface(ORIENTATIONS[rotation], aspectRatio)
             glInterface.addMediaCodecSurface(videoEncoder!!.surface)
         }
         return result
@@ -160,13 +150,14 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val useA
      * backward compatibility reason
      */
     fun prepareVideo(width: Int, height: Int, fps: Int, bitrate: Int, hardwareRotation: Boolean,
-                     rotation: Int): Boolean {
-        return prepareVideo(width, height, fps, bitrate, hardwareRotation, 2, rotation)
+                     rotation: Int, aspectRatio: Double): Boolean {
+        return prepareVideo(512, 640, fps, bitrate, hardwareRotation, 2, rotation, aspectRatio = aspectRatio)
     }
 
-    private fun prepareGlInterface(rotation: Int) {
-        Log.i(TAG, "prepareGlInterface " + rotation + " " + isPortrait);
+    private fun prepareGlInterface(rotation: Int, aspectRatio: Double) {
+        Log.i(TAG, "prepareGlInterface $rotation $isPortrait")
         this.glInterface.setEncoderSize(videoEncoder!!.width, videoEncoder!!.height)
+//        this.glInterface.setPreviewSize(videoEncoder!!.width, videoEncoder!!.height)
         this.glInterface.setRotation(rotation)
         this.glInterface.start()
     }
@@ -192,10 +183,10 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val useA
     @JvmOverloads
     fun prepareAudio(bitrate: Int = 64 * 1024, sampleRate: Int = 32000, isStereo: Boolean = true, echoCanceler: Boolean = false,
                      noiseSuppressor: Boolean = false): Boolean {
-        microphoneManager!!.createMicrophone(sampleRate, isStereo, echoCanceler, noiseSuppressor)
+        microphoneManager.createMicrophone(sampleRate, isStereo, echoCanceler, noiseSuppressor)
         prepareAudioRtp(isStereo, sampleRate)
-        return audioEncoder!!.prepareAudioEncoder(bitrate, sampleRate, isStereo,
-                microphoneManager!!.maxInputSize)
+        return audioEncoder.prepareAudioEncoder(bitrate, sampleRate, isStereo,
+                microphoneManager.maxInputSize)
     }
 
     /**
@@ -204,7 +195,7 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val useA
      */
     fun setForce(forceVideo: Force, forceAudio: Force) {
         videoEncoder!!.force = forceVideo
-        audioEncoder!!.setForce(forceAudio)
+        audioEncoder.setForce(forceAudio)
     }
 
 
@@ -220,7 +211,7 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val useA
      */
     fun startStream(url: String) {
         if (isStreaming) {
-            return;
+            return
         }
         isStreaming = true
         startStreamRtp(url)
@@ -228,7 +219,7 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val useA
 
     fun startRecord(path: String) {
         if (isRecording) {
-            return;
+            return
         }
         recordController.startRecord(path, this)
         isRecording = true
@@ -238,19 +229,19 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val useA
     }
 
     fun stopRecord() {
+        if (isRecording) {
+            recordController.stopRecord()
+        }
         isRecording = false
-        recordController.stopRecord()
         if (!isStreaming) {
             stopStream()
         }
     }
 
     fun startEncoders() {
-        videoEncoder!!.start()
-        if(useAudio){
-            audioEncoder!!.start()
-            microphoneManager!!.start()
-        }
+        audioEncoder.start()
+        microphoneManager.start()
+        videoEncoder?.start()
     }
 
     private fun resetVideoEncoder() {
@@ -262,16 +253,15 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val useA
      * Stop stream started with @startStream.
      */
     fun stopStream() {
-        isStreaming = false
-        stopStreamRtp()
+        if (isStreaming) {
+            isStreaming = false
+            stopStreamRtp()
+        }
         if (!isRecording) {
-            if(useAudio){
-                microphoneManager!!.stop()
-                audioEncoder!!.stop()
-            }
-           videoEncoder!!.stop()
-
-           glInterface.stop()
+            microphoneManager.stop()
+            videoEncoder?.stop()
+            audioEncoder.stop()
+            glInterface.stop()
         }
     }
 
@@ -365,7 +355,6 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val useA
         } else {
             srsFlvMuxer.setVideoResolution(videoEncoder!!.width, videoEncoder!!.height)
         }
-
         srsFlvMuxer.start(url)
     }
 
@@ -381,7 +370,7 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val useA
         return srsFlvMuxer.shouldRetry(reason)
     }
 
-    public fun reConnect(delay: Long) {
+    fun reConnect(delay: Long) {
         srsFlvMuxer.reConnect(delay)
     }
 
@@ -389,14 +378,14 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val useA
      * Mute microphone, can be called before, while and after stream.
      */
     fun disableAudio() {
-        microphoneManager!!.mute()
+        microphoneManager.mute()
     }
 
     /**
      * Enable a muted microphone, can be called before, while and after stream.
      */
     fun enableAudio() {
-        microphoneManager!!.unMute()
+        microphoneManager.unMute()
     }
 
     /**
@@ -405,7 +394,7 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val useA
      * @return true if muted, false if enabled
      */
     val isAudioMuted: Boolean
-        get() = microphoneManager!!.isMuted
+        get() = microphoneManager.isMuted
 
 
     fun getBitrate(): Int {
@@ -465,17 +454,20 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val useA
     override fun getVideoData(h264Buffer: ByteBuffer, info: MediaCodec.BufferInfo) {
         fpsListener.calculateFps()
         if (isStreaming && !pausedStreaming) getH264DataRtp(h264Buffer, info)
-        if (isRecording && !pausedRecording) recordController.recordVideo(h264Buffer, info)
+//        if (isRecording && !pausedRecording) recordController.recordVideo(h264Buffer, info)
+        recordController.recordVideo(h264Buffer, info)
     }
 
     override fun inputPCMData(frame: Frame) {
-        audioEncoder!!.inputPCMData(frame)
+        audioEncoder.inputPCMData(frame)
     }
 
     override fun onVideoFormat(mediaFormat: MediaFormat) {
+        recordController.setVideoFormat(mediaFormat)
     }
 
     override fun onAudioFormat(mediaFormat: MediaFormat) {
+        recordController.setAudioFormat(mediaFormat)
     }
 
     fun getAacDataRtp(aacBuffer: ByteBuffer, info: MediaCodec.BufferInfo) {
@@ -490,11 +482,12 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val useA
         srsFlvMuxer.sendVideo(h264Buffer, info)
     }
 
-   override fun  onFps(fps: Int) {
+    override fun onFps(fps: Int) {
         curFps = fps
     }
 
     override fun onStatusChange(status: RecordController.Status) {
+        Log.d("TAG", "Recorder status: $status")
     }
 
 

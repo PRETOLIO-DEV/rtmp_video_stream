@@ -1,4 +1,4 @@
-package com.marshalltechnology.video_stream
+package old
 
 
 import android.app.Activity
@@ -101,7 +101,8 @@ object CameraUtils {
         val map = characteristics[CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP]!!
         val supportedSet = mutableSetOf<String>()
 
-        for (size in map.getOutputSizes(ImageFormat.JPEG)) {
+//        for (size in map.getOutputSizes(ImageFormat.JPEG)) {
+        for (size in map.getOutputSizes(SurfaceTexture::class.java)) {
             supportedSet.add(size.toString())
         }
 

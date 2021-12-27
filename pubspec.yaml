@@ -1,7 +1,7 @@
 name: video_stream
 description: A new Flutter package to live stream video to RTMP server.
 version: 0.0.1
-homepage: https://github.com/MarshallTechnology/video_stream
+homepage: https://github.com/PRETOLIO-DEV/rtmp_video_stream
 
 environment:
   sdk: ">=2.12.0 <3.0.0"
@@ -25,6 +25,6 @@ flutter:
     platforms:
       android:
         package: com.marshalltechnology.video_stream
-        pluginClass: VideoStreamPlugin
+        pluginClass: RtmppublisherPlugin
       ios:
-        pluginClass: VideoStreamPlugin
+        pluginClass: RtmppublisherPlugin

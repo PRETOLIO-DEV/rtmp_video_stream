@@ -5,19 +5,28 @@ import android.app.Activity
 import android.content.Context
 import android.graphics.ImageFormat
 import android.graphics.Point
+import android.graphics.SurfaceTexture
 import android.hardware.camera2.*
 import android.hardware.camera2.CameraCaptureSession.CaptureCallback
 import android.media.CamcorderProfile
 import android.media.ImageReader
 import android.os.Build
+import android.os.Handler
 import android.util.Log
 import android.util.Size
-import android.util.SparseIntArray
 import android.view.OrientationEventListener
 import android.view.Surface
-import android.view.WindowManager
+import android.view.SurfaceHolder
+import android.widget.LinearLayout
+import android.widget.Toast
 import androidx.annotation.RequiresApi
+import com.pedro.encoder.input.video.CameraHelper
+import com.pedro.encoder.video.FormatVideoEncoder
+import com.pedro.rtplibrary.rtmp.RtmpCamera1
+import com.pedro.rtplibrary.rtmp.RtmpCamera2
 import com.pedro.rtplibrary.util.BitrateAdapter
+import com.pedro.rtplibrary.view.LightOpenGlView
+import com.pedro.rtplibrary.view.OpenGlView
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.EventChannel.EventSink
 import io.flutter.plugin.common.MethodChannel
@@ -31,17 +40,16 @@ import java.util.*
 
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 class Camera(
-        val activity: Activity?,
+        val activity: Activity,
         val flutterTexture: SurfaceTextureEntry,
         val dartMessenger: DartMessenger,
         val cameraName: String,
         val resolutionPreset: String?,
         val streamingPreset: String?,
         val enableAudio: Boolean,
-        val useOpenGL: Boolean) : ConnectCheckerRtmp {
-    private val isRtmpCompatible: Boolean
+        val useOpenGL: Boolean) : ConnectCheckerRtmp, SurfaceTexture.OnFrameAvailableListener, SurfaceHolder.Callback {
     private val cameraManager: CameraManager
-    private val orientationEventListener: OrientationEventListener
+//    private val orientationEventListener: OrientationEventListener
     private val isFrontFacing: Boolean
     private val sensorOrientation: Int
     private val captureSize: Size
@@ -53,35 +61,88 @@ class Camera(
     private val recordingProfile: CamcorderProfile
     private val streamingProfile: CamcorderProfile
     private var currentOrientation = OrientationEventListener.ORIENTATION_UNKNOWN
-    private var rtmpCamera: RtmpCameraConnector? = null
+
+    //    private var rtmpCamera: RtmpCameraConnector? = null
     private var bitrateAdapter: BitrateAdapter? = null
     private val maxRetries = 3
     private var currentRetries = 0
     private var publishUrl: String? = null
+    private val aspectRatio: Double = 4.0 / 5.0
+
+//    private val glView: FlutterGLSurfaceView
+    private val glView: LightOpenGlView
+    private val rtmpCamera: RtmpCamera2
+
+    init {
+        checkNotNull(activity) { "No activity available!" }
+        cameraManager = activity.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+//        orientationEventListener = object : OrientationEventListener(activity.applicationContext) {
+//            override fun onOrientationChanged(i: Int) {
+//                if (i == ORIENTATION_UNKNOWN) {
+//                    return
+//                }
+//                // Convert the raw deg angle to the nearest multiple of 90.
+//                currentOrientation = Math.round(i / 90.0).toInt() * 90
+//                // Send a message with the new orientation to the ux.
+//                dartMessenger.send(DartMessenger.EventType.ROTATION_UPDATE, (currentOrientation / 90).toString())
+//
+//                Log.i(TAG, "Updated Orientation (sent) " + currentOrientation + " -- " + (currentOrientation / 90).toString())
+//                updateSurfaceView()
+//            }
+//        }
+//        orientationEventListener.enable()
+        val characteristics = cameraManager.getCameraCharacteristics(cameraName)
+        isFrontFacing = characteristics.get(CameraCharacteristics.LENS_FACING) == CameraMetadata.LENS_FACING_FRONT
+        sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION)
+        currentOrientation = Math.round(activity.resources.configuration.orientation / 90.0).toInt() * 90
+        val preset = ResolutionPreset.valueOf(resolutionPreset!!)
+        recordingProfile = CameraUtils.getBestAvailableCamcorderProfileForResolutionPreset(cameraName, preset)
+
+        captureSize = Size(recordingProfile.videoFrameWidth, recordingProfile.videoFrameHeight)
+        previewSize = CameraUtils.computeBestPreviewSize(cameraName, preset)
+
+        // Data for streaming, different than the recording data.
+        val streamPreset = ResolutionPreset.valueOf(streamingPreset!!)
+        streamingProfile = CameraUtils.getBestAvailableCamcorderProfileForResolutionPreset(cameraName, streamPreset)
+
+//        glView = FlutterGLSurfaceView(activity, flutterTexture.surfaceTexture())
+        glView = LightOpenGlView(activity)
+        glView.isKeepAspectRatio = true
+        glView.holder.addCallback(this)
+//        glView.setEGLContextClientVersion(2)
+//        renderer = CameraSurfaceRenderer()
+//        renderer.addOnRendererStateChangedLister(streamer.getVideoHandlerListener())
+//        renderer.addOnRendererStateChangedLister(this)
+//        glView.setRenderer(renderer)
+//        glView.renderMode = GLSurfaceView.RENDERMODE_WHEN_DIRTY
+        rtmpCamera = RtmpCamera2(glView, this)
+        updateSurfaceView()
+    }
 
     // Mirrors camera.dart
     enum class ResolutionPreset {
         low, medium, high, veryHigh, ultraHigh, max
     }
 
+    private val formatVideoEncoder = FormatVideoEncoder.YUV420Dynamical
+
     @Throws(IOException::class)
-    private fun prepareCameraForRecordAndStream(fps: Int, bitrate: Int?, audio: Boolean) {
-        if (rtmpCamera != null) {
-            rtmpCamera!!.stopStream()
-            rtmpCamera = null
-        }
-        Log.i(TAG, "prepareCameraForRecordAndStream(audio: " + audio + " opengl=" + useOpenGL+ ", portrait: " + isPortrait +   ", currentOrientation: " + currentOrientation + ", mediaOrientation: " + mediaOrientation
-         + ", frontfacing: " + isFrontFacing + " )" )
-        rtmpCamera = RtmpCameraConnector(
-                context = activity!!.applicationContext!!,
-                useOpenGL = useOpenGL,
-                useAudio = audio,
-                isPortrait =  true,
-                connectChecker = this)
+    private fun prepareCameraForRecordAndStream(fps: Int, bitrate: Int?) {
+//        if (rtmpCamera != null) {
+        rtmpCamera.stopStream()
+//            rtmpCamera = null
+//        }
+        Log.i(TAG, "prepareCameraForRecordAndStream(opengl=" + useOpenGL + ", portrait: " + isPortrait + ", currentOrientation: " + currentOrientation + ", mediaOrientation: " + mediaOrientation
+                + ", frontfacing: " + isFrontFacing + ")")
+//        rtmpCamera = RtmpCameraConnector(
+//                context = activity!!.applicationContext!!,
+//                useOpenGL = useOpenGL,
+//                isPortrait = isPortrait,
+//                connectChecker = this)
 
         // Turn on audio if it is requested.
-        if (audio) {
-            rtmpCamera!!.prepareAudio()
+        if (enableAudio) {
+            rtmpCamera.prepareAudio()
         }
 
         // Bitrate for the stream/recording.
@@ -90,81 +151,95 @@ class Camera(
             bitrateToUse = 1200 * 1024
         }
 
-        rtmpCamera!!.prepareVideo(
-                //if (!isPortrait) streamingProfile.videoFrameWidth else
-                    streamingProfile.videoFrameHeight,
-                //if (!isPortrait) streamingProfile.videoFrameHeight else
-                    streamingProfile.videoFrameWidth,
-                fps,
-                bitrateToUse,
-                !useOpenGL,
-                mediaOrientation)
+//        rtmpCamera.prepareVideo(
+//                if (!isPortrait) streamingProfile.videoFrameWidth else streamingProfile.videoFrameHeight,
+//                if (!isPortrait) streamingProfile.videoFrameHeight else streamingProfile.videoFrameWidth,
+//                fps,
+//                bitrateToUse,
+//                !useOpenGL,
+//                mediaOrientation,
+//                aspectRatio)
     }
 
 
     @SuppressLint("MissingPermission")
     @Throws(CameraAccessException::class)
     fun open(result: MethodChannel.Result) {
-        pictureImageReader = ImageReader.newInstance(
-                captureSize.width, captureSize.height, ImageFormat.JPEG, 2)
+        Handler().postDelayed({
+            val rtmpPreviewSize = getSizePairByOrientation()
+            rtmpCamera.startPreview(CameraHelper.Facing.FRONT, rtmpPreviewSize.first, rtmpPreviewSize.second)
+            val reply: MutableMap<String, Any> = HashMap()
+            reply["textureId"] = flutterTexture.id()
+
+            if (isPortrait) {
+                reply["previewWidth"] = previewSize.width
+                reply["previewHeight"] = previewSize.height
+            } else {
+                reply["previewWidth"] = previewSize.height
+                reply["previewHeight"] = previewSize.width
+            }
+            reply["previewQuarterTurns"] = currentOrientation / 90
+            Log.i(TAG, "open: width: " + reply["previewWidth"] + " height: " + reply["previewHeight"] + " currentOrientation: " + currentOrientation + " quarterTurns: " + reply["previewQuarterTurns"])
+            result.success(reply)
+        }, 500)
 
 
+//        pictureImageReader = ImageReader.newInstance(captureSize.width, captureSize.height, ImageFormat.JPEG, 2)
         // Used to steam image byte data to dart side.
-        cameraManager.openCamera(
-                cameraName,
-                object : CameraDevice.StateCallback() {
-                    override fun onOpened(device: CameraDevice) {
-                        cameraDevice = device
-                        try {
-                            startPreview()
-                        } catch (e: CameraAccessException) {
-                            result.error("CameraAccess", e.message, null)
-                            close()
-                            return
-                        }
-                        val reply: MutableMap<String, Any> = HashMap()
-                        reply["textureId"] = flutterTexture.id()
-
-                        //if (isPortrait) {
-                            reply["previewWidth"] = previewSize.width
-                            reply["previewHeight"] = previewSize.height
-                        /*} else {
-                            reply["previewWidth"] = previewSize.height
-                            reply["previewHeight"] = previewSize.width
-                        }*/
-                        reply["previewQuarterTurns"] = currentOrientation / 90
-                        reply["isRtmpCompatible"] = isRtmpCompatible
-                        Log.i(TAG, "open: width: " + reply["previewWidth"] + " height: " + reply["previewHeight"] + " currentOrientation: " + currentOrientation + " quarterTurns: " + reply["previewQuarterTurns"])
-                        result.success(reply)
-                    }
-
-                    override fun onClosed(camera: CameraDevice) {
-                        dartMessenger.sendCameraClosingEvent()
-                        super.onClosed(camera)
-                    }
-
-                    override fun onDisconnected(cameraDevice: CameraDevice) {
-                        Log.v("Camera", "onDisconnected()")
-                        close()
-                        dartMessenger.send(DartMessenger.EventType.ERROR, "The camera was disconnected.")
-                    }
-
-                    override fun onError(cameraDevice: CameraDevice, errorCode: Int) {
-                        Log.v("Camera", "onError(" + errorCode + ")")
-                        close()
-                        val errorDescription: String
-                        errorDescription = when (errorCode) {
-                            ERROR_CAMERA_IN_USE -> "The camera device is in use already."
-                            ERROR_MAX_CAMERAS_IN_USE -> "Max cameras in use"
-                            ERROR_CAMERA_DISABLED -> "The camera device could not be opened due to a device policy."
-                            ERROR_CAMERA_DEVICE -> "The camera device has encountered a fatal error"
-                            ERROR_CAMERA_SERVICE -> "The camera service has encountered a fatal error."
-                            else -> "Unknown camera error"
-                        }
-                        dartMessenger.send(DartMessenger.EventType.ERROR, errorDescription)
-                    }
-                },
-                null)
+//        cameraManager.openCamera(
+//                cameraName,
+//                object : CameraDevice.StateCallback() {
+//                    override fun onOpened(device: CameraDevice) {
+//                        cameraDevice = device
+//                        try {
+//                            startPreview()
+//                        } catch (e: CameraAccessException) {
+//                            result.error("CameraAccess", e.message, null)
+//                            close()
+//                            return
+//                        }
+//                        val reply: MutableMap<String, Any> = HashMap()
+//                        reply["textureId"] = flutterTexture.id()
+//
+//                        if (isPortrait) {
+//                            reply["previewWidth"] = previewSize.width
+//                            reply["previewHeight"] = previewSize.height
+//                        } else {
+//                            reply["previewWidth"] = previewSize.height
+//                            reply["previewHeight"] = previewSize.width
+//                        }
+//                        reply["previewQuarterTurns"] = currentOrientation / 90
+//                        Log.i(TAG, "open: width: " + reply["previewWidth"] + " height: " + reply["previewHeight"] + " currentOrientation: " + currentOrientation + " quarterTurns: " + reply["previewQuarterTurns"])
+//                        result.success(reply)
+//                    }
+//
+//                    override fun onClosed(camera: CameraDevice) {
+//                        dartMessenger.sendCameraClosingEvent()
+//                        super.onClosed(camera)
+//                    }
+//
+//                    override fun onDisconnected(cameraDevice: CameraDevice) {
+//                        Log.v("Camera", "onDisconnected()")
+//                        close()
+//                        dartMessenger.send(DartMessenger.EventType.ERROR, "The camera was disconnected.")
+//                    }
+//
+//                    override fun onError(cameraDevice: CameraDevice, errorCode: Int) {
+//                        Log.v("Camera", "onError(" + errorCode + ")")
+//                        close()
+//                        val errorDescription: String
+//                        errorDescription = when (errorCode) {
+//                            ERROR_CAMERA_IN_USE -> "The camera device is in use already."
+//                            ERROR_MAX_CAMERAS_IN_USE -> "Max cameras in use"
+//                            ERROR_CAMERA_DISABLED -> "The camera device could not be opened due to a device policy."
+//                            ERROR_CAMERA_DEVICE -> "The camera device has encountered a fatal error"
+//                            ERROR_CAMERA_SERVICE -> "The camera service has encountered a fatal error."
+//                            else -> "Unknown camera error"
+//                        }
+//                        dartMessenger.send(DartMessenger.EventType.ERROR, errorDescription)
+//                    }
+//                },
+//                null)
     }
 
     @Throws(IOException::class)
@@ -176,14 +251,67 @@ class Camera(
         }
     }
 
+    fun takePicture(filePath: String, result: MethodChannel.Result) {
+        val file = File(filePath)
+        if (file.exists()) {
+            result.error(
+                    "fileExists", "File at path '$filePath' already exists. Cannot overwrite.", null)
+            return
+        }
+
+        pictureImageReader!!.setOnImageAvailableListener(
+                { reader: ImageReader ->
+                    try {
+                        reader.acquireLatestImage().use { image ->
+                            val buffer = image.planes[0].buffer
+                            writeToFile(buffer, file)
+                            result.success(null)
+                        }
+                    } catch (e: IOException) {
+                        result.error("IOError", "Failed saving image", null)
+                    }
+                },
+                null)
+        try {
+            // Create a new capture session with all this stuff in it.
+            val captureBuilder = cameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE)
+            captureBuilder.addTarget(pictureImageReader!!.surface)
+            captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, mediaOrientation)
+            cameraCaptureSession!!.capture(
+                    captureBuilder.build(),
+                    object : CaptureCallback() {
+                        override fun onCaptureFailed(
+                                session: CameraCaptureSession,
+                                request: CaptureRequest,
+                                failure: CaptureFailure) {
+                            val reason: String
+                            reason = when (failure.reason) {
+                                CaptureFailure.REASON_ERROR -> "An error happened in the framework"
+                                CaptureFailure.REASON_FLUSHED -> "The capture has failed due to an abortCaptures() call"
+                                else -> "Unknown reason"
+                            }
+                            result.error("captureFailure", reason, null)
+                        }
+
+                        // Close out the session once we have captured stuff.
+                        override fun onCaptureSequenceCompleted(session: CameraCaptureSession, sequenceId: Int, frameNumber: Long) {
+                            session.close()
+                        }
+                    },
+                    null)
+        } catch (e: CameraAccessException) {
+            result.error("cameraAccess", e.message, null);
+        }
+    }
+
 
     @Throws(CameraAccessException::class)
     private fun createCaptureSession(
-            templateType: Int, onSuccessCallback: Runnable, surface: Surface
+            templateType: Int, onSuccessCallback: Runnable
+//            , surface: Surface
     ) {
         // Close the old session first.
         closeCaptureSession()
-
         Log.v("Camera", "createCaptureSession " + previewSize.width + "x" + previewSize.height + " mediaOrientation: " + mediaOrientation + " currentOrientation: " + currentOrientation + " sensorOrientation: " + sensorOrientation + " porteait: " + isPortrait)
 
         // Create a new capture builder.
@@ -194,22 +322,20 @@ class Camera(
 
         // Build Flutter surface to render to
         val surfaceTexture = flutterTexture.surfaceTexture()
-        //if (isPortrait) {
-            surfaceTexture.setDefaultBufferSize(previewSize.width, previewSize.height)
-        /*} else {
-            surfaceTexture.setDefaultBufferSize(previewSize.height, previewSize.width)
-        }*/
+        val size = getSizePairByOrientation()
+        surfaceTexture.setDefaultBufferSize(size.first, size.second)
         val flutterSurface = Surface(surfaceTexture)
 
         // The capture request.
         requestBuilder.addTarget(flutterSurface)
-        if (templateType != CameraDevice.TEMPLATE_PREVIEW) {
-            requestBuilder.addTarget(surface)
-        }
+//        if (templateType != CameraDevice.TEMPLATE_PREVIEW) {
+//            glSurfaceTexture?.apply { requestBuilder.addTarget(Surface(this)) }
+//            requestBuilder.addTarget(surface)
+//        }
 
         // Create the surface lists for the capture session.
         surfaceList.add(flutterSurface)
-        surfaceList.add(surface)
+//        glSurfaceTexture?.apply { surfaceList.add(Surface(this)) }
 
         // Prepare the callback
         val callback: CameraCaptureSession.StateCallback = object : CameraCaptureSession.StateCallback() {
@@ -249,33 +375,44 @@ class Camera(
         cameraDevice!!.createCaptureSession(surfaceList, callback, null)
     }
 
-
-    fun stopVideoRecordingOrStreaming(result: MethodChannel.Result) {
-        Log.i("Camera", "stopVideoRecordingOrStreaming ")
-
-        if (rtmpCamera == null) {
-            result.success(null)
+    fun startVideoRecording(filePath: String, result: MethodChannel.Result) {
+        if (File(filePath).exists()) {
+            result.error("fileExists", "File at path '$filePath' already exists.", null)
             return
         }
         try {
-            currentRetries = 0
-            publishUrl = null
-            if (rtmpCamera != null) {
-                rtmpCamera!!.stopRecord()
-                rtmpCamera!!.stopStream()
-                rtmpCamera = null
+            // If we are already setup we just start the recording part of everything instead.
+//            if (rtmpCamera == null) {
+//                prepareCameraForRecordAndStream(recordingProfile.videoFrameRate, null)
+//                createCaptureSession(
+//                        CameraDevice.TEMPLATE_RECORD,
+//                        Runnable { rtmpCamera.startRecord(filePath) }
+////                        , rtmpCamera!!.inputSurface
+//                )
+//            } else {
+
+            if (!rtmpCamera.isStreaming()) {
+                val rtmpPreviewSize = getSizePairByOrientation()
+                if (rtmpCamera.prepareAudio() && rtmpCamera.prepareVideo(rtmpPreviewSize.first, rtmpPreviewSize.second, 1024 * 1024)) {
+//                    rtmpCamera1.startRecord(folder.getAbsolutePath() + "/" + currentDateAndTime + ".mp4")
+                    rtmpCamera.startRecord(filePath)
+                }
+            } else {
+//                rtmpCamera1.startRecord(folder.getAbsolutePath() + "/" + currentDateAndTime + ".mp4")
+                rtmpCamera.startRecord(filePath)
             }
 
-            startPreview()
+
+//            }
             result.success(null)
         } catch (e: CameraAccessException) {
             result.error("videoRecordingFailed", e.message, null)
-        } catch (e: IllegalStateException) {
+        } catch (e: IOException) {
             result.error("videoRecordingFailed", e.message, null)
         }
     }
 
-    fun MuteVideo(mute: Boolean, result: MethodChannel.Result) {
+    fun muteVideo(mute: Boolean, result: MethodChannel.Result) {
         try {
             if (mute) {
                 rtmpCamera!!.enableAudio()
@@ -287,6 +424,57 @@ class Camera(
             result.error("Mute Failed", e.message, null)
         } catch (e: IllegalStateException) {
             result.error("Mute Failed", e.message, null)
+        }
+    }
+
+    fun stopVideoRecordingOrStreaming(result: MethodChannel.Result) {
+        Log.i("Camera", "stopVideoRecordingOrStreaming ")
+        if (rtmpCamera == null) {
+            result.success(null)
+            return
+        }
+        try {
+            currentRetries = 0
+            publishUrl = null
+            rtmpCamera?.apply {
+//                if (isStreaming) {
+//                    stopStream()
+//                }
+                if (isRecording) {
+                    stopRecord()
+                }
+            }
+//            rtmpCamera = null
+//            startPreview()
+            result.success(null)
+        } catch (e: CameraAccessException) {
+            result.error("videoRecordingFailed", e.message, null)
+        } catch (e: IllegalStateException) {
+            result.error("videoRecordingFailed", e.message, null)
+        }
+    }
+
+    fun stopVideoRecording(result: MethodChannel.Result) {
+        Log.i("Camera", "stopVideoRecording")
+
+        if (rtmpCamera == null) {
+            result.success(null)
+            return
+        }
+        try {
+            currentRetries = 0
+            publishUrl = null
+            if (rtmpCamera != null) {
+                rtmpCamera!!.stopRecord()
+//                rtmpCamera = null
+            }
+
+            startPreview()
+            result.success(null)
+        } catch (e: CameraAccessException) {
+            result.error("videoRecordingFailed", e.message, null)
+        } catch (e: IllegalStateException) {
+            result.error("videoRecordingFailed", e.message, null)
         }
     }
 
@@ -302,7 +490,7 @@ class Camera(
             publishUrl = null
             if (rtmpCamera != null) {
                 rtmpCamera!!.stopStream()
-                rtmpCamera = null
+//                rtmpCamera = null
             }
 
             startPreview()
@@ -314,12 +502,41 @@ class Camera(
         }
     }
 
+    fun pauseVideoRecording(result: MethodChannel.Result) {
+        if (rtmpCamera == null || !rtmpCamera!!.isRecording) {
+            result.success(null)
+            return
+        }
+        try {
+            rtmpCamera!!.pauseRecord()
+        } catch (e: IllegalStateException) {
+            result.error("videoRecordingFailed", e.message, null)
+            return
+        }
+        result.success(null)
+    }
+
+    fun resumeVideoRecording(result: MethodChannel.Result) {
+        if (rtmpCamera == null || !rtmpCamera!!.isRecording) {
+            result.success(null)
+            return
+        }
+        try {
+            rtmpCamera!!.resumeRecord()
+        } catch (e: IllegalStateException) {
+            result.error("videoRecordingFailed", e.message, null)
+            return
+        }
+        result.success(null)
+    }
+
     @Throws(CameraAccessException::class)
     fun startPreview() {
         createCaptureSession(
                 CameraDevice.TEMPLATE_PREVIEW,
-                Runnable { },
-        pictureImageReader!!.surface)
+                Runnable { }
+//                , pictureImageReader!!.surface
+        )
     }
 
     @Throws(CameraAccessException::class)
@@ -329,8 +546,9 @@ class Camera(
 
         createCaptureSession(
                 CameraDevice.TEMPLATE_RECORD,
-                Runnable {},
-                imageStreamReader!!.surface)
+                Runnable {}
+//                , imageStreamReader!!.surface
+        )
         imageStreamChannel.setStreamHandler(
                 object : EventChannel.StreamHandler {
                     override fun onListen(o: Any, imageStreamSink: EventSink) {
@@ -346,7 +564,8 @@ class Camera(
     private fun setImageStreamImageAvailableListener(imageStreamSink: EventSink) {
         imageStreamReader!!.setOnImageAvailableListener(
                 { reader: ImageReader ->
-                    val img = reader.acquireLatestImage() ?: return@setOnImageAvailableListener
+                    val img = reader.acquireLatestImage()
+                            ?: return@setOnImageAvailableListener
                     val planes: MutableList<Map<String, Any>> = ArrayList()
                     for (plane in img.planes) {
                         val buffer = plane.buffer
@@ -371,7 +590,7 @@ class Camera(
 
     private fun closeCaptureSession() {
         if (cameraCaptureSession != null) {
-            Log.v("Camera", "Close recoordingCaptureSession")
+            Log.v("Camera", "Close recordingCaptureSession")
             try {
                 cameraCaptureSession!!.stopRepeating()
                 cameraCaptureSession!!.abortCaptures()
@@ -401,7 +620,7 @@ class Camera(
         }
         if (rtmpCamera != null) {
             rtmpCamera!!.stopStream()
-            rtmpCamera = null
+//            rtmpCamera = null
             bitrateAdapter = null
             publishUrl = null
         }
@@ -410,10 +629,10 @@ class Camera(
     fun dispose() {
         close()
         flutterTexture.release()
-        orientationEventListener.disable()
+//        orientationEventListener.disable()
     }
 
-    fun startVideoStreaming(url: String?, bitrate: Int?, boolean: Boolean, result: MethodChannel.Result) {
+    fun startVideoStreaming(url: String?, bitrate: Int?, result: MethodChannel.Result) {
         if (url == null) {
             result.error("fileExists", "Must specify a url.", null)
             return
@@ -422,13 +641,13 @@ class Camera(
             // Setup the rtmp session
             if (rtmpCamera == null) {
                 currentRetries = 0
-                prepareCameraForRecordAndStream(streamingProfile.videoFrameRate, bitrate, boolean)
+                prepareCameraForRecordAndStream(streamingProfile.videoFrameRate, bitrate)
 
                 // Start capturing from the camera.
                 createCaptureSession(
                         CameraDevice.TEMPLATE_RECORD,
-                        Runnable { rtmpCamera!!.startStream(url) },
-                        rtmpCamera!!.inputSurface
+                        Runnable { rtmpCamera!!.startStream(url) }
+//                        , rtmpCamera!!.inputSurface
                 )
             } else {
                 rtmpCamera!!.startStream(url)
@@ -453,15 +672,15 @@ class Camera(
         try {
             // Setup the rtmp session
             currentRetries = 0
-            prepareCameraForRecordAndStream(streamingProfile.videoFrameRate, bitrate, true)
+            prepareCameraForRecordAndStream(streamingProfile.videoFrameRate, bitrate)
 
             createCaptureSession(
                     CameraDevice.TEMPLATE_RECORD,
                     Runnable {
                         rtmpCamera!!.startStream(url)
                         rtmpCamera!!.startRecord(filePath)
-                    },
-                    rtmpCamera!!.inputSurface
+                    }
+//                    , rtmpCamera!!.inputSurface
             )
             result.success(null)
         } catch (e: CameraAccessException) {
@@ -479,7 +698,7 @@ class Camera(
         }
         try {
             currentRetries = 0
-            rtmpCamera!!.pauseStream()
+//            rtmpCamera!!.pauseStream()
         } catch (e: IllegalStateException) {
             result.error("videoStreamingFailed", e.message, null)
             return
@@ -503,7 +722,7 @@ class Camera(
             ret["bitrate"] = rtmpCamera!!.getBitrate()
             ret["width"] = rtmpCamera!!.getStreamWidth()
             ret["height"] = rtmpCamera!!.getStreamHeight()
-            ret["fps"] = rtmpCamera!!.getFps()
+//            ret["fps"] = rtmpCamera!!.getFps()
             result.success(ret)
         } else {
             result.error("noStats", "Not streaming anything", null)
@@ -516,7 +735,7 @@ class Camera(
             return
         }
         try {
-            rtmpCamera!!.resumeStream()
+//            rtmpCamera!!.resumeStream()
         } catch (e: IllegalStateException) {
             result.error("videoStreamingFailed", e.message, null)
             return
@@ -525,9 +744,8 @@ class Camera(
     }
 
 
-
     private val mediaOrientation: Int
-         get() {
+        get() {
             val sensorOrientationOffset = if (isFrontFacing)
                 -currentOrientation
             else
@@ -551,39 +769,6 @@ class Camera(
                 }
             }
         }
-
-    init {
-        checkNotNull(activity) { "No activity available!" }
-        cameraManager = activity.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-        orientationEventListener = object : OrientationEventListener(activity.applicationContext) {
-            override fun onOrientationChanged(i: Int) {
-                if (i == ORIENTATION_UNKNOWN) {
-                    return
-                }
-                // Convert the raw deg angle to the nearest multiple of 90.
-                currentOrientation = Math.round(i / 90.0).toInt() * 90
-                // Send a message with the new orientation to the ux.
-                dartMessenger.send(DartMessenger.EventType.ROTATION_UPDATE, (currentOrientation / 90).toString())
-
-                Log.i(TAG, "Updated Orientation (sent) " + currentOrientation + " -- " + (currentOrientation / 90).toString())
-            }
-        }
-        orientationEventListener.enable()
-        val characteristics = cameraManager.getCameraCharacteristics(cameraName)
-        isFrontFacing = characteristics.get(CameraCharacteristics.LENS_FACING) == CameraMetadata.LENS_FACING_FRONT
-        sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION)!!
-        currentOrientation = Math.round(activity.resources.configuration.orientation / 90.0).toInt() * 90
-        val preset = ResolutionPreset.valueOf(resolutionPreset!!)
-        recordingProfile = CameraUtils.getBestAvailableCamcorderProfileForResolutionPreset(activity, cameraName, preset)
-        Log.i(TAG, "Selected recording profile ${recordingProfile.videoFrameWidth}x${recordingProfile.videoFrameHeight}")
-        captureSize = Size(recordingProfile.videoFrameWidth, recordingProfile.videoFrameHeight)
-        previewSize = CameraUtils.computeBestPreviewSize(activity, cameraName, preset)
-        isRtmpCompatible = CameraUtils.isRtmpCompatible(previewSize)
-
-        // Data for streaming, different than the recording data.
-        val streamPreset = ResolutionPreset.valueOf(streamingPreset!!)
-        streamingProfile = CameraUtils.getBestAvailableCamcorderProfileForResolutionPreset(activity, cameraName, streamPreset)
-    }
 
     override fun onAuthSuccessRtmp() {
     }
@@ -618,7 +803,7 @@ class Camera(
             }
 
             rtmpCamera!!.stopStream()
-            rtmpCamera = null
+//            rtmpCamera = null
             activity!!.runOnUiThread {
                 dartMessenger.send(DartMessenger.EventType.RTMP_STOPPED, "Failed retry")
             }
@@ -634,7 +819,7 @@ class Camera(
     override fun onDisconnectRtmp() {
         if (rtmpCamera != null) {
             rtmpCamera!!.stopStream()
-            rtmpCamera = null
+//            rtmpCamera = null
         }
         activity!!.runOnUiThread {
             dartMessenger.send(DartMessenger.EventType.RTMP_STOPPED, "Disconnected")
@@ -643,5 +828,57 @@ class Camera(
 
     companion object {
         private val TAG: String? = "FlutterCamera"
+    }
+
+    private var glSurfaceTexture: SurfaceTexture? = null
+
+    override fun onFrameAvailable(surfaceTexture: SurfaceTexture?) {
+//        glView.requestRender()
+    }
+
+    private fun getSizePairByOrientation(): Pair<Int, Int> {
+        return if (isPortrait) {
+            Pair((previewSize.width * aspectRatio).toInt(), previewSize.height)
+        } else {
+            Pair(previewSize.height, (previewSize.width * aspectRatio).toInt())
+        }
+    }
+
+    private fun updateSurfaceView() {
+        resizeSurface()
+//        setCameraPreviewSize()
+    }
+
+//    private fun setCameraPreviewSize() {
+//        glView.queueEvent {
+//            val size = getSizePairByOrientation()
+//            renderer.setCameraPreviewSize(size.second, size.first, false)
+//        }
+//    }
+
+    private fun resizeSurface() {
+        val size = getSizePairByOrientation()
+        Log.v(TAG, "resizeSurface size [${size.first}: ${size.second}] isAttachedToWindow: ${glView.isAttachedToWindow}")
+        val layoutParams = LinearLayout.LayoutParams(size.second, size.first)
+        //            layoutParams.marginStart = -size.second
+        if (!glView.isAttachedToWindow) {
+            activity.addContentView(glView, layoutParams)
+        } else {
+            glView.layoutParams = layoutParams
+        }
+    }
+
+    override fun surfaceChanged(holder: SurfaceHolder?, format: Int, width: Int, height: Int) {
+        val surfaceTexture = flutterTexture.surfaceTexture()
+        val size = getSizePairByOrientation()
+        surfaceTexture.setDefaultBufferSize(size.first, size.second)
+        val flutterSurface = Surface(surfaceTexture)
+    }
+
+    override fun surfaceDestroyed(holder: SurfaceHolder?) {
+    }
+
+    override fun surfaceCreated(holder: SurfaceHolder?) {
+
     }
 }

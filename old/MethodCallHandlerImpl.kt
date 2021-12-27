@@ -1,4 +1,4 @@
-package com.marshalltechnology.video_stream
+package old
 
 import android.app.Activity
 import android.hardware.camera2.CameraAccessException
@@ -158,7 +158,7 @@ internal class MethodCallHandlerImpl(
                 streamingPreset,
                 enableAudio,
                 enableOpenGL)
-        camera!!.open(cameraName!!, result)
+        camera!!.open(result)
     }
 
     // We move catching CameraAccessException out of onMethodCall because it causes a crash

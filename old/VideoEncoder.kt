@@ -1,4 +1,4 @@
-package com.marshalltechnology.video_stream
+package old
 
 import android.graphics.ImageFormat
 import android.media.MediaCodec
@@ -91,6 +91,8 @@ class VideoEncoder(
             videoFormat.setInteger(MediaFormat.KEY_FRAME_RATE, fps)
             videoFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, iFrameInterval)
             videoFormat.setInteger(MediaFormat.KEY_ROTATION, rotation)
+            videoFormat.setInteger(MediaFormat.KEY_PIXEL_ASPECT_RATIO_WIDTH, width)
+            videoFormat.setInteger(MediaFormat.KEY_PIXEL_ASPECT_RATIO_HEIGHT, height)
             if (this.avcProfile > 0 && this.avcProfileLevel > 0) {
                 // MediaFormat.KEY_PROFILE, API > 21
                 videoFormat.setInteger(MediaFormat.KEY_PROFILE, this.avcProfile)
