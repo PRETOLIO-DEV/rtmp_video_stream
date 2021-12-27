@@ -426,7 +426,7 @@ class Camera(
 
                 // Start capturing from the camera.
                 createCaptureSession(
-                        CameraDevice.TEMPLATE_RECORD,
+                        CameraDevice.TEMPLATE_PREVIEW,
                         Runnable { rtmpCamera!!.startStream(url) },
                         rtmpCamera!!.inputSurface
                 )
