@@ -158,6 +158,7 @@ internal class MethodCallHandlerImpl(
                 streamingPreset,
                 enableAudio,
                 enableOpenGL)
+
         camera!!.open(result)
     }
 

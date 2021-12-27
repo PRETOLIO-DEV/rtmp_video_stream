@@ -58,7 +58,7 @@ class Camera(
     private val maxRetries = 3
     private var currentRetries = 0
     private var publishUrl: String? = null
-
+    private val aspectRatio: Double = 4.0 / 5.0
     // Mirrors camera.dart
     enum class ResolutionPreset {
         low, medium, high, veryHigh, ultraHigh, max
@@ -75,7 +75,6 @@ class Camera(
         rtmpCamera = RtmpCameraConnector(
                 context = activity!!.applicationContext!!,
                 useOpenGL = useOpenGL,
-                useAudio = audio,
                 isPortrait =  true,
                 connectChecker = this)
 
@@ -98,7 +97,9 @@ class Camera(
                 fps,
                 bitrateToUse,
                 !useOpenGL,
-                mediaOrientation)
+                mediaOrientation,
+                1
+        )
     }
 
 
@@ -179,8 +180,9 @@ class Camera(
 
     @Throws(CameraAccessException::class)
     private fun createCaptureSession(
-            templateType: Int, onSuccessCallback: Runnable, surface: Surface
-    ) {
+            templateType: Int, onSuccessCallback: Runnable
+           , surface: Surface
+    ){
         // Close the old session first.
         closeCaptureSession()
 
@@ -194,11 +196,12 @@ class Camera(
 
         // Build Flutter surface to render to
         val surfaceTexture = flutterTexture.surfaceTexture()
-        //if (isPortrait) {
-            surfaceTexture.setDefaultBufferSize(previewSize.width, previewSize.height)
-        /*} else {
-            surfaceTexture.setDefaultBufferSize(previewSize.height, previewSize.width)
-        }*/
+        val size = getSizePairByOrientation()
+        surfaceTexture.setDefaultBufferSize(size.first, size.second)
+        //surfaceTexture.setDefaultBufferSize(previewSize.width, previewSize.height)
+        //} else {
+        //    surfaceTexture.setDefaultBufferSize(previewSize.height, previewSize.width)
+        //}
         val flutterSurface = Surface(surfaceTexture)
 
         // The capture request.
@@ -210,7 +213,6 @@ class Camera(
         // Create the surface lists for the capture session.
         surfaceList.add(flutterSurface)
         surfaceList.add(surface)
-
         // Prepare the callback
         val callback: CameraCaptureSession.StateCallback = object : CameraCaptureSession.StateCallback() {
             @RequiresApi(Build.VERSION_CODES.O)
@@ -249,6 +251,13 @@ class Camera(
         cameraDevice!!.createCaptureSession(surfaceList, callback, null)
     }
 
+    private fun getSizePairByOrientation(): Pair<Int, Int> {
+        return if (isPortrait) {
+            Pair((previewSize.width * aspectRatio).toInt(), previewSize.height)
+        } else {
+            Pair(previewSize.height, (previewSize.width * aspectRatio).toInt())
+        }
+    }
 
     fun stopVideoRecordingOrStreaming(result: MethodChannel.Result) {
         Log.i("Camera", "stopVideoRecordingOrStreaming ")
@@ -318,8 +327,9 @@ class Camera(
     fun startPreview() {
         createCaptureSession(
                 CameraDevice.TEMPLATE_PREVIEW,
-                Runnable { },
-        pictureImageReader!!.surface)
+                Runnable { }
+                , pictureImageReader!!.surface
+        )
     }
 
     @Throws(CameraAccessException::class)
@@ -329,8 +339,9 @@ class Camera(
 
         createCaptureSession(
                 CameraDevice.TEMPLATE_RECORD,
-                Runnable {},
-                imageStreamReader!!.surface)
+                Runnable {}
+                , imageStreamReader!!.surface
+        )
         imageStreamChannel.setStreamHandler(
                 object : EventChannel.StreamHandler {
                     override fun onListen(o: Any, imageStreamSink: EventSink) {
@@ -427,8 +438,8 @@ class Camera(
                 // Start capturing from the camera.
                 createCaptureSession(
                         CameraDevice.TEMPLATE_RECORD,
-                        Runnable { rtmpCamera!!.startStream(url) },
-                        rtmpCamera!!.inputSurface
+                        Runnable { rtmpCamera!!.startStream(url) }
+                        , rtmpCamera!!.inputSurface
                 )
             } else {
                 rtmpCamera!!.startStream(url)
@@ -460,8 +471,8 @@ class Camera(
                     Runnable {
                         rtmpCamera!!.startStream(url)
                         rtmpCamera!!.startRecord(filePath)
-                    },
-                    rtmpCamera!!.inputSurface
+                    }
+                    , rtmpCamera!!.inputSurface
             )
             result.success(null)
         } catch (e: CameraAccessException) {

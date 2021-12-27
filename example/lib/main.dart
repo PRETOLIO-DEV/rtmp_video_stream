@@ -31,7 +31,7 @@ void logError(String code, String message) =>
 class _CameraExampleHomeState extends State<CameraExampleHome>
     with WidgetsBindingObserver, TickerProviderStateMixin {
   CameraController? controller =
-      CameraController(cameras[1], ResolutionPreset.high,androidUseOpenGL: true);
+  CameraController(cameras[1], ResolutionPreset.high,androidUseOpenGL: true);
   String? imagePath;
   String? videoPath;
   String? url;
@@ -96,7 +96,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
       }
     } else if (state == AppLifecycleState.resumed) {
       if (controller != null) {
-        onNewCameraSelected(controller!.description!);
+        onNewCameraSelected(controller?.description);
       }
     }
   }
@@ -131,47 +131,47 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
                   elevation: 0.0,
                   title: streaming
                       ? ElevatedButton(
-                          onPressed: () => onStopButtonPressed(),
-                          style: ButtonStyle(
-                              backgroundColor:
-                                  MaterialStateProperty.all<Color>(Colors.red)),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
-                              Icon(Icons.videocam_off),
-                              SizedBox(width: 10),
-                              Text(
-                                'End Stream',
-                                style: TextStyle(
-                                  fontSize: 20.0,
-                                  fontWeight: FontWeight.bold,
-                                  decoration: TextDecoration.underline,
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
-                      : ElevatedButton(
-                          onPressed: () => onVideoStreamingButtonPressed(),
-                          style: ButtonStyle( backgroundColor: MaterialStateProperty.all<Color>(Colors.blue)),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
-                              Icon(Icons.videocam),
-                              SizedBox(width: 10),
-                              Text(
-                                'Start Stream',
-                                style: TextStyle(
-                                  fontSize: 20.0,
-                                  fontWeight: FontWeight.bold,
-                                  decoration: TextDecoration.underline,
-                                ),
-                              ),
-                            ],
+                    onPressed: () => onStopButtonPressed(),
+                    style: ButtonStyle(
+                        backgroundColor:
+                        MaterialStateProperty.all<Color>(Colors.red)),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Icon(Icons.videocam_off),
+                        SizedBox(width: 10),
+                        Text(
+                          'End Stream',
+                          style: TextStyle(
+                            fontSize: 20.0,
+                            fontWeight: FontWeight.bold,
+                            decoration: TextDecoration.underline,
                           ),
                         ),
+                      ],
+                    ),
+                  )
+                      : ElevatedButton(
+                    onPressed: () async => await onVideoStreamingButtonPressed(),
+                    style: ButtonStyle( backgroundColor: MaterialStateProperty.all<Color>(Colors.blue)),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Icon(Icons.videocam),
+                        SizedBox(width: 10),
+                        Text(
+                          'Start Stream',
+                          style: TextStyle(
+                            fontSize: 20.0,
+                            fontWeight: FontWeight.bold,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                   actions: [
                     Padding(
                       padding: const EdgeInsets.all(10.0),
@@ -238,7 +238,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
       print('cameraDescription is null');
     }
     controller = CameraController(
-      cameraDescription,
+      cameraDescription ?? cameras.first,
       ResolutionPreset.high,
       enableAudio: enableAudio,
       androidUseOpenGL: useOpenGL,
@@ -261,7 +261,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     try {
       await controller!.initialize();
 
-      if(streaming) onVideoStreamingButtonPressed();
+      if(streaming) await onVideoStreamingButtonPressed();
 
     } on CameraException catch (e) {
       _showCameraException(e);
@@ -272,8 +272,8 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     }
   }
 
-  void onVideoStreamingButtonPressed() {
-    startVideoStreaming().then((url) {
+  onVideoStreamingButtonPressed() async {
+    await startVideoStreaming().then((url) {
       if (mounted) {
         setState(() {
           streaming = true;
@@ -340,11 +340,11 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
   Future<void> stopVideoStreaming() async {
     try {
       //if(controller!.value.isStreamingVideoRtmp){
-        await controller!.stopVideoStreaming();
-        if (_timer != null) {
-          _timer!.cancel();
-          _timer = null;
-        }
+      await controller!.stopVideoStreaming();
+      if (_timer != null) {
+        _timer!.cancel();
+        _timer = null;
+      }
       //}
     } on CameraException catch (e) {
       _showCameraException(e);
