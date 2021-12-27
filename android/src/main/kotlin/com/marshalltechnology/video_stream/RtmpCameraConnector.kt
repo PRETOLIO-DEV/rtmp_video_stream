@@ -144,10 +144,10 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val useA
         pausedStreaming = false
         pausedRecording = false
         videoEncoder = VideoEncoder(
-//          this, 750, 800 , fps, bitrate, if (useOpenGL) 0 else rotation, hardwareRotation, iFrameInterval, FormatVideoEncoder.SURFACE, avcProfile, avcProfileLevel)
-            this, width, height, fps, bitrate, if (useOpenGL) 0 else rotation, hardwareRotation, iFrameInterval, FormatVideoEncoder.SURFACE, avcProfile, avcProfileLevel)
+          this, 480, 640 , fps, bitrate, if (useOpenGL) 0 else rotation, hardwareRotation, iFrameInterval, FormatVideoEncoder.SURFACE, avcProfile, avcProfileLevel)
+//          this, width, height, fps, bitrate, if (useOpenGL) 0 else rotation, hardwareRotation, iFrameInterval, FormatVideoEncoder.SURFACE, avcProfile, avcProfileLevel)
 //          this, height, width, fps, bitrate, if (useOpenGL) 0 else rotation, hardwareRotation, iFrameInterval, FormatVideoEncoder.SURFACE, avcProfile, avcProfileLevel)
-
+//480x640
         val result = videoEncoder!!.prepare()
         if (useOpenGL) {
             prepareGlInterface(ORIENTATIONS[rotation])
