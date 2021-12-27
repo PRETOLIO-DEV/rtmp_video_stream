@@ -96,7 +96,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
       }
     } else if (state == AppLifecycleState.resumed) {
       if (controller != null) {
-        onNewCameraSelected(controller!.description!);
+        onNewCameraSelected(controller?.description);
       }
     }
   }
@@ -238,7 +238,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
       print('cameraDescription is null');
     }
     controller = CameraController(
-      cameraDescription,
+      cameraDescription ?? cameras.first,
       ResolutionPreset.high,
       enableAudio: enableAudio,
       androidUseOpenGL: useOpenGL,
@@ -325,7 +325,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
         _timer = null;
       }
       url = myUrl;
-      await controller!.startVideoStreaming(url!, androidUseOpenGL: true, audio: true);
+      await controller!.startVideoStreaming(url!, androidUseOpenGL: true);
       // _timer = Timer.periodic(Duration(seconds: 1), (timer) async {
       //   var stats = await controller!.getStreamStatistics();
       //   print(stats);

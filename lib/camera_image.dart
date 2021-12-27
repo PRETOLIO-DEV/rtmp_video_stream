@@ -9,12 +9,6 @@ part of 'camera.dart';
 /// The number and meaning of the planes in an image are determined by the
 /// format of the Image.
 class Plane {
-  final Uint8List bytes;
-  final int? bytesPerPixel;
-  final int bytesPerRow;
-  final int? height;
-  final int? width;
-  
   Plane._fromPlatformData(Map<dynamic, dynamic> data)
       : bytes = data['bytes'],
         bytesPerPixel = data['bytesPerPixel'],
@@ -22,10 +16,30 @@ class Plane {
         height = data['height'],
         width = data['width'];
 
+  /// Bytes representing this plane.
+  final Uint8List bytes;
+
+  /// The distance between adjacent pixel samples on Android, in bytes.
+  ///
+  /// Will be `null` on iOS.
+  final int bytesPerPixel;
+
+  /// The row stride for this color plane, in bytes.
+  final int bytesPerRow;
+
+  /// Height of the pixel buffer on iOS.
+  ///
+  /// Will be `null` on Android
+  final int height;
+
+  /// Width of the pixel buffer on iOS.
+  ///
+  /// Will be `null` on Android.
+  final int width;
 }
 
-// TODO:Turn [ImageFormatGroup] to a class with int values.
-
+// TODO:(bmparr) Turn [ImageFormatGroup] to a class with int values.
+/// Group of image formats that are comparable across Android and iOS platforms.
 enum ImageFormatGroup {
   /// The image format does not fit into any specific group.
   unknown,
@@ -53,6 +67,8 @@ enum ImageFormatGroup {
 /// Describes how pixels are represented in an image.
 class ImageFormat {
   ImageFormat._fromPlatformData(this.raw) : group = _asImageFormatGroup(raw);
+
+  /// Describes the format group the raw image format falls into.
   final ImageFormatGroup group;
 
   /// Raw version of the format from the Android or iOS platform.
@@ -87,16 +103,43 @@ ImageFormatGroup _asImageFormatGroup(dynamic rawFormat) {
   return ImageFormatGroup.unknown;
 }
 
+/// A single complete image buffer from the platform camera.
+///
+/// This class allows for direct application access to the pixel data of an
+/// Image through one or more [Uint8List]. Each buffer is encapsulated in a
+/// [Plane] that describes the layout of the pixel data in that plane. The
+/// [CameraImage] is not directly usable as a UI resource.
+///
+/// Although not all image formats are planar on iOS, we treat 1-dimensional
+/// images as single planar images.
 class CameraImage {
-  final ImageFormat format;
-  final int height;
-  final int width;
-  final List<Plane> planes;
-
   CameraImage._fromPlatformData(Map<dynamic, dynamic> data)
-    : format = ImageFormat._fromPlatformData(data['format']),
-      height = data['height'],
-      width = data['width'],
-      planes = List<Plane>.unmodifiable(data['planes'].map((dynamic planeData) => Plane._fromPlatformData(planeData)));
+      : format = ImageFormat._fromPlatformData(data['format']),
+        height = data['height'],
+        width = data['width'],
+        planes = List<Plane>.unmodifiable(data['planes']
+            .map((dynamic planeData) => Plane._fromPlatformData(planeData)));
 
+  /// Format of the image provided.
+  ///
+  /// Determines the number of planes needed to represent the image, and
+  /// the general layout of the pixel data in each [Uint8List].
+  final ImageFormat format;
+
+  /// Height of the image in pixels.
+  ///
+  /// For formats where some color channels are subsampled, this is the height
+  /// of the largest-resolution plane.
+  final int height;
+
+  /// Width of the image in pixels.
+  ///
+  /// For formats where some color channels are subsampled, this is the width
+  /// of the largest-resolution plane.
+  final int width;
+
+  /// The pixels planes for this image.
+  ///
+  /// The number of planes is determined by the format of the image.
+  final List<Plane> planes;
 }

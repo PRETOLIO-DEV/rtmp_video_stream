@@ -93,7 +93,7 @@ class Camera(
 //        orientationEventListener.enable()
         val characteristics = cameraManager.getCameraCharacteristics(cameraName)
         isFrontFacing = characteristics.get(CameraCharacteristics.LENS_FACING) == CameraMetadata.LENS_FACING_FRONT
-        sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION)
+        sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION)!!
         currentOrientation = Math.round(activity.resources.configuration.orientation / 90.0).toInt() * 90
         val preset = ResolutionPreset.valueOf(resolutionPreset!!)
         recordingProfile = CameraUtils.getBestAvailableCamcorderProfileForResolutionPreset(cameraName, preset)
@@ -171,13 +171,13 @@ class Camera(
             val reply: MutableMap<String, Any> = HashMap()
             reply["textureId"] = flutterTexture.id()
 
-            if (isPortrait) {
+            //if (isPortrait) {
                 reply["previewWidth"] = previewSize.width
                 reply["previewHeight"] = previewSize.height
-            } else {
+            /*} else {
                 reply["previewWidth"] = previewSize.height
                 reply["previewHeight"] = previewSize.width
-            }
+            }*/
             reply["previewQuarterTurns"] = currentOrientation / 90
             Log.i(TAG, "open: width: " + reply["previewWidth"] + " height: " + reply["previewHeight"] + " currentOrientation: " + currentOrientation + " quarterTurns: " + reply["previewQuarterTurns"])
             result.success(reply)
@@ -765,7 +765,8 @@ class Camera(
                 if (pt.x < pt.y) {
                     return true
                 } else {
-                    return false
+                    return true
+                    //return false
                 }
             }
         }
@@ -837,7 +838,7 @@ class Camera(
     }
 
     private fun getSizePairByOrientation(): Pair<Int, Int> {
-        return if (isPortrait) {
+        return  if (isPortrait) {
             Pair((previewSize.width * aspectRatio).toInt(), previewSize.height)
         } else {
             Pair(previewSize.height, (previewSize.width * aspectRatio).toInt())
@@ -868,17 +869,17 @@ class Camera(
         }
     }
 
-    override fun surfaceChanged(holder: SurfaceHolder?, format: Int, width: Int, height: Int) {
+    override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
         val surfaceTexture = flutterTexture.surfaceTexture()
         val size = getSizePairByOrientation()
         surfaceTexture.setDefaultBufferSize(size.first, size.second)
         val flutterSurface = Surface(surfaceTexture)
     }
 
-    override fun surfaceDestroyed(holder: SurfaceHolder?) {
+    override fun surfaceDestroyed(holder: SurfaceHolder) {
     }
 
-    override fun surfaceCreated(holder: SurfaceHolder?) {
+    override fun surfaceCreated(holder: SurfaceHolder) {
 
     }
 }
