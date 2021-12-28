@@ -649,6 +649,14 @@ class CameraController extends ValueNotifier<CameraValue> {
     }
   }
 
+  Future<void> switchCamera() async {
+    try {
+      await _channel.invokeMethod<void>('switchCamera');
+    } on PlatformException catch (e) {
+      throw CameraException(e.code, e.message.toString());
+    }
+  }
+
   /// Start a video recording and save the file to [path].
   ///
   /// A path can for example be obtained using

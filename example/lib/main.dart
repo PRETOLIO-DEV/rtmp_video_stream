@@ -177,10 +177,21 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
                       padding: const EdgeInsets.all(10.0),
                       child: IconButton(
                         color: Theme.of(context).primaryColor,
+                        icon: const Icon(Icons.mic),
+                        tooltip: 'Mute',
+                        onPressed: () async {
+                          await mute();
+                        },
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: IconButton(
+                        color: Theme.of(context).primaryColor,
                         icon: const Icon(Icons.switch_video),
                         tooltip: 'Switch Camera',
-                        onPressed: () {
-                          toggleCameraDirection();
+                        onPressed: () async {
+                          await toggleCameraDirection();
                         },
                       ),
                     ),
@@ -220,18 +231,18 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
         .showSnackBar(SnackBar(content: Text(message)));
   }
 
+  mute() async {
+    enableAudio = !enableAudio;
+    await controller!.audio(enableAudio);
+    print('mute');
+  }
   toggleCameraDirection() async {
-    if (cameraDirection == 'front') {
-      await onNewCameraSelected(cameras.first);
-      cameraDirection = 'back';
-    } else {
-      await onNewCameraSelected(cameras.last);
-      cameraDirection = 'front';
-    }
+     await controller!.switchCamera();
   }
 
   onNewCameraSelected(CameraDescription? cameraDescription) async {
     if (controller != null) {
+      //if(streaming) controller!.pauseVideoStreaming();
       await controller!.dispose();
     }
     if (cameraDescription == null) {
@@ -262,7 +273,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
       await controller!.initialize();
 
       if(streaming) onVideoStreamingButtonPressed();
-
+      //if(streaming) await controller!.resumeVideoStreaming();
     } on CameraException catch (e) {
       _showCameraException(e);
     }
@@ -279,7 +290,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
           streaming = true;
         });
       }
-      if (url!.isNotEmpty) showInSnackBar('Streaming video to $url');
+      if (url?.isNotEmpty ?? false) showInSnackBar('Streaming video to $url');
       Wakelock.enable();
     });
   }

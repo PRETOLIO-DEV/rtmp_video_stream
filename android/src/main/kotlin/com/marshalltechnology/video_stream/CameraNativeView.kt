@@ -183,6 +183,18 @@ class CameraNativeView(
         }
     }
 
+
+    fun switchCamera(result: MethodChannel.Result) {
+        try {
+            rtmpCamera.switchCamera()
+            result.success(null)
+        } catch (e: CameraAccessException) {
+            result.error("switchCamera Failed", e.message, null)
+        } catch (e: IllegalStateException) {
+            result.error("switchCamera Failed", e.message, null)
+        }
+    }
+
     fun muteVideo(mute: Boolean, result: MethodChannel.Result) {
         try {
             if (mute) {
@@ -245,7 +257,7 @@ class CameraNativeView(
         cameraName = targetCamera
         val previewSize = CameraUtils.computeBestPreviewSize(cameraName, preset)
 
-        Log.d("CameraNativeView", "startPreview: $preset")
+        Log.d("CameraNativeView", "isSurfaceCreated: $isSurfaceCreated startPreview: $preset")
         if (isSurfaceCreated) {
             try {
                 if (rtmpCamera.isOnPreview) {
@@ -254,6 +266,7 @@ class CameraNativeView(
 
                 rtmpCamera.startPreview(if (isFrontFacing(targetCamera)) FRONT else BACK, previewSize.width, previewSize.height)
             } catch (e: CameraAccessException) {
+                Log.d("CameraNativeView ex", "$e")
 //                close()
                 activity?.runOnUiThread { dartMessenger?.send(DartMessenger.EventType.ERROR, "CameraAccessException") }
                 return

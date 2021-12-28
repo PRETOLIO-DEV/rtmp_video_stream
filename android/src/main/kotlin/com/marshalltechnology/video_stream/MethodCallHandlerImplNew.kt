@@ -93,6 +93,10 @@ class MethodCallHandlerImplNew(
                     handleException(e, result)
                 }
             }
+            "switchCamera" -> {
+                Log.i("switchCamera", "ok")
+                getCameraView()?.switchCamera(result)
+            }
             "startVideoRecording" -> {
                 Log.i("Stuff", "startVideoRecording")
                 getCameraView()?.startVideoRecording(call.argument("filePath")!!, result)
