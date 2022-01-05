@@ -394,19 +394,19 @@ class CameraController extends ValueNotifier<CameraValue> {
 
   Future<void> audio(bool enable) async {
     try {
-      if(Platform.isAndroid){
+      //if(Platform.isAndroid){
         await _channel.invokeMapMethod<String, dynamic>('mute',
           <String, dynamic>{
-            'mute': enable
+            'mute': Platform.isAndroid ? enable : !enable
           },
         );
-      }else{
+/*      }else{
         if(enable){
           await _channel.invokeMethod<void>('mute');
         }else{
           await _channel.invokeMethod<void>('unmute');
         }
-      }
+      }*/
     } catch (e) {
       print(e);
       throw e;

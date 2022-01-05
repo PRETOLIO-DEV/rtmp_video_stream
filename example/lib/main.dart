@@ -31,7 +31,8 @@ void logError(String code, String message) =>
 class _CameraExampleHomeState extends State<CameraExampleHome>
     with WidgetsBindingObserver, TickerProviderStateMixin {
   CameraController? controller =
-      CameraController(cameras[1], ResolutionPreset.high,androidUseOpenGL: true);
+      CameraController(CameraDescription(name: '0', lensDirection: CameraLensDirection.back, sensorOrientation: 0),
+          ResolutionPreset.high,androidUseOpenGL: true);
   String? imagePath;
   String? videoPath;
   String? url;
@@ -75,7 +76,14 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
       }
     });
 
-    await controller!.initialize();
+    try{
+      await controller!.initialize();
+    }catch(e){
+      print(e);
+    }
+
+    controller!.audio(false);
+    controller!.switchCamera();
     if (!mounted) {
       return;
     }
