@@ -17,7 +17,8 @@ public class SwiftVideoStreamPlugin : NSObject {
     private var retries: Int = 0
     private let eventSink: FlutterEventSink
     private let myDelegate = MyRTMPStreamQoSDelagate()
-    
+    private var currentPosition: AVCaptureDevice.Position = .front
+
     @objc
     public init(sink: @escaping FlutterEventSink) {
         eventSink = sink
@@ -147,7 +148,13 @@ public class SwiftVideoStreamPlugin : NSObject {
 
     @objc
     public func switchCamera() {
-        rtmpStream.torch.toggle()
+        print("rotateCamera")
+        let position: AVCaptureDevice.Position = currentPosition == .back ? .front : .back
+        rtmpStream.captureSettings[.isVideoMirrored] = position == .front
+        rtmpStream.attachCamera(DeviceUtil.device(withPosition: position)) { error in
+            print(error.description)
+        }
+        currentPosition = position
     }
 
     
