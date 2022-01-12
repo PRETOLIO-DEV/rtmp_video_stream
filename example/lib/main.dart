@@ -33,6 +33,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
   CameraController? controller =
       CameraController(CameraDescription(name: '0', lensDirection: CameraLensDirection.back, sensorOrientation: 0),
           ResolutionPreset.high,androidUseOpenGL: true);
+      //CameraController(cameras.first, ResolutionPreset.high,androidUseOpenGL: true);
   String? imagePath;
   String? videoPath;
   String? url;
@@ -256,7 +257,10 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     if (cameraDescription == null) {
       print('cameraDescription is null');
     }
-    controller = CameraController(
+    controller = CameraController(CameraDescription(name: '0', lensDirection: CameraLensDirection.back, sensorOrientation: 0),
+        ResolutionPreset.high,androidUseOpenGL: true);
+
+        CameraController(
       cameraDescription ?? cameras.first,
       ResolutionPreset.high,
       enableAudio: enableAudio,

@@ -15,10 +15,50 @@
       <excludeFolder url="file://$MODULE_DIR$/example/ios/.symlinks/plugins/video_stream/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/example/ios/.symlinks/plugins/video_stream/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/example/ios/.symlinks/plugins/video_stream/build" />
+      <excludeFolder url="file://$MODULE_DIR$/example/ios/.symlinks/plugins/video_stream/livecommerce/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/example/ios/.symlinks/plugins/video_stream/livecommerce/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/example/ios/.symlinks/plugins/video_stream/livecommerce/build" />
+      <excludeFolder url="file://$MODULE_DIR$/example/ios/.symlinks/plugins/video_stream/livecommerce/ios/.symlinks/plugins/video_stream/example/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/example/ios/.symlinks/plugins/video_stream/livecommerce/ios/.symlinks/plugins/video_stream/example/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/example/ios/.symlinks/plugins/video_stream/livecommerce/ios/.symlinks/plugins/video_stream/example/build" />
+      <excludeFolder url="file://$MODULE_DIR$/example/ios/.symlinks/plugins/video_stream/livecommerce/ios/.symlinks/plugins/video_stream/livecommerce/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/example/ios/.symlinks/plugins/video_stream/livecommerce/ios/.symlinks/plugins/video_stream/livecommerce/build" />
+      <excludeFolder url="file://$MODULE_DIR$/example/ios/.symlinks/plugins/video_stream/livecommerce/ios/.symlinks/plugins/video_stream/livecommerce/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/livecommerce/ios/.symlinks/plugins/connectivity/example/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/livecommerce/ios/.symlinks/plugins/connectivity/example/build" />
+      <excludeFolder url="file://$MODULE_DIR$/livecommerce/ios/.symlinks/plugins/connectivity/example/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/livecommerce/ios/.symlinks/plugins/flutter_barcode_scanner/example/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/livecommerce/ios/.symlinks/plugins/flutter_barcode_scanner/example/build" />
+      <excludeFolder url="file://$MODULE_DIR$/livecommerce/ios/.symlinks/plugins/flutter_barcode_scanner/example/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/livecommerce/ios/.symlinks/plugins/wakelock/example/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/livecommerce/ios/.symlinks/plugins/wakelock/example/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/livecommerce/ios/.symlinks/plugins/wakelock/example/build" />
+      <excludeFolder url="file://$MODULE_DIR$/livecommerce/ios/.symlinks/plugins/flutter_barcode_scanner/build" />
+      <excludeFolder url="file://$MODULE_DIR$/livecommerce/ios/.symlinks/plugins/flutter_barcode_scanner/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/livecommerce/ios/.symlinks/plugins/flutter_barcode_scanner/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/livecommerce/ios/.symlinks/plugins/wakelock/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/livecommerce/ios/.symlinks/plugins/wakelock/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/livecommerce/ios/.symlinks/plugins/wakelock/build" />
+      <excludeFolder url="file://$MODULE_DIR$/example/ios/.symlinks/plugins/wakelock/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/example/ios/.symlinks/plugins/wakelock/build" />
+      <excludeFolder url="file://$MODULE_DIR$/example/ios/.symlinks/plugins/wakelock/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/livecommerce/ios/.symlinks/plugins/permission_handler/build" />
+      <excludeFolder url="file://$MODULE_DIR$/livecommerce/ios/.symlinks/plugins/permission_handler/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/livecommerce/ios/.symlinks/plugins/permission_handler/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/livecommerce/ios/.symlinks/plugins/connectivity/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/livecommerce/ios/.symlinks/plugins/connectivity/build" />
+      <excludeFolder url="file://$MODULE_DIR$/livecommerce/ios/.symlinks/plugins/connectivity/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/example/ios/.symlinks/plugins/wakelock/example/build" />
+      <excludeFolder url="file://$MODULE_DIR$/example/ios/.symlinks/plugins/wakelock/example/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/example/ios/.symlinks/plugins/wakelock/example/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/livecommerce/ios/.symlinks/plugins/permission_handler/example/build" />
+      <excludeFolder url="file://$MODULE_DIR$/livecommerce/ios/.symlinks/plugins/permission_handler/example/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/livecommerce/ios/.symlinks/plugins/permission_handler/example/.dart_tool" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Dart SDK" level="project" />
     <orderEntry type="library" name="Flutter Plugins" level="project" />
+    <orderEntry type="library" name="Dart Packages" level="project" />
   </component>
 </module>

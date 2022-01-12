@@ -15,8 +15,8 @@ A new Flutter package to stream video to RTMP server.
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
-  s.dependency 'HaishinKit', '~> 1.0.10'
-  s.platform = :ios, '8.0'
+  s.dependency 'HaishinKit', '~> 1.0.13'
+  s.platform = :ios, '9.0'
 
   # Flutter.framework does not contain a i386 slice.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }

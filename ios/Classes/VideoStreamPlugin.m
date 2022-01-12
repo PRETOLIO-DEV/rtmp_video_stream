@@ -615,6 +615,16 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
     [_rtmpStream resumeVideoStreaming];
 }
 
+- (void)mute:(BOOL)enableMute {
+    NSLog(@"mute");
+    [_rtmpStream selectMuteWithMute:enableMute];
+}
+
+- (void)switchCamera {
+    NSLog(@"switchCamera");
+    [_rtmpStream switchCamera];
+}
+
 - (NSDictionary*)getStreamStatistics {
     return [_rtmpStream getStreamStatistics];
 }
@@ -697,7 +707,7 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
 - (void)startImageStreamWithMessenger:(NSObject<FlutterBinaryMessenger> *)messenger {
     if (!_isStreamingImages) {
         FlutterEventChannel *eventChannel =
-        [FlutterEventChannel eventChannelWithName:@"video_stream/camera/imageStream"
+        [FlutterEventChannel eventChannelWithName:@"plugins.flutter.io/rtmp_publisher/camera/imageStream"
                                   binaryMessenger:messenger];
         
         _imageStreamHandler = [[FLTImageStreamHandler alloc] init];
@@ -710,13 +720,7 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
     }
 }
 
-- (void)mute:(BOOL)enableMute {
-    [_rtmpStream selectMuteWithMute:enableMute];
-}
 
-- (void)switchCamera {
-    [_rtmpStream switchCamera];
-}
 
 - (void)stopImageStream {
     if (_isStreamingImages) {
@@ -934,7 +938,7 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
                 [_registry textureFrameAvailable:textureId];
             };
             FlutterEventChannel *eventChannel = [FlutterEventChannel
-                                                 eventChannelWithName:[NSString stringWithFormat:@"video_stream/cameraEvents%lld",textureId]
+                                                 eventChannelWithName:[NSString stringWithFormat:@"plugins.flutter.io/rtmp_publisher/cameraEvents%lld",textureId]
                                                  binaryMessenger:_messenger];
             
             [eventChannel setStreamHandler:cam];
@@ -961,9 +965,10 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
         [_camera resumeVideoStreaming];
         result(nil);
     } else if ([@"switchCamera" isEqualToString:call.method]) {
-            [_camera switchCamera];
-            result(nil);
+        [_camera switchCamera];
+        result(nil);
     } else if ([@"mute" isEqualToString:call.method]) {
+        
         NSNumber *enableMute = call.arguments[@"mute"];
         [_camera mute:[enableMute boolValue]];
         result(nil);

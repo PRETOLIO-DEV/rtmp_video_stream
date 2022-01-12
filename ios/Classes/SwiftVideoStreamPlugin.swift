@@ -8,6 +8,7 @@ import os
 import ReplayKit
 import VideoToolbox
 
+
 @objc
 public class SwiftVideoStreamPlugin : NSObject {
     private var rtmpConnection = RTMPConnection()
@@ -17,7 +18,7 @@ public class SwiftVideoStreamPlugin : NSObject {
     private var retries: Int = 0
     private let eventSink: FlutterEventSink
     private let myDelegate = MyRTMPStreamQoSDelagate()
-    private var currentPosition: AVCaptureDevice.Position = .front
+    private var currentPosition: Int = 0
 
     @objc
     public init(sink: @escaping FlutterEventSink) {
@@ -140,6 +141,8 @@ public class SwiftVideoStreamPlugin : NSObject {
 
     @objc
     public func selectMute(mute: Bool) {
+        print("mute 2")
+
         rtmpStream.audioSettings = [
             .muted: mute, // mute audio
             .bitrate: 32 * 1000,
@@ -148,13 +151,14 @@ public class SwiftVideoStreamPlugin : NSObject {
 
     @objc
     public func switchCamera() {
-        print("rotateCamera")
-        let position: AVCaptureDevice.Position = currentPosition == .back ? .front : .back
-        rtmpStream.captureSettings[.isVideoMirrored] = position == .front
-        rtmpStream.attachCamera(DeviceUtil.device(withPosition: position)) { error in
-            print(error.description)
+        NSLog("switchCamera 2 ")
+        if currentPosition == 0 {
+            currentPosition = 1
+            rtmpStream.attachCamera(DeviceUtil.device(withPosition: AVCaptureDevice.Position.back))
+        }else{
+            currentPosition = 0
+            rtmpStream.attachCamera(DeviceUtil.device(withPosition: AVCaptureDevice.Position.front))
         }
-        currentPosition = position
     }
 
     
