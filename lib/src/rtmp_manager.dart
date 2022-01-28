@@ -71,11 +71,15 @@ class RtmpManager {
   }
 
   // 销毁
-  Future<RtmpResponse> dispose() async {
-    RtmpResponse result =
-        RtmpResponse.fromData(await _methodChannel.invokeMethod("dispose"));
-    this._rtmpSnapshot = RtmpSnapshot.fromData(result.result);
-    return result;
+  Future<RtmpResponse?> dispose() async {
+    try{
+      RtmpResponse result =
+      RtmpResponse.fromData(await _methodChannel.invokeMethod("dispose"));
+      this._rtmpSnapshot = RtmpSnapshot.fromData(result.result);
+      return result;
+    }catch(e){
+      print(e);
+    }
   }
 
   // 获取 直播快照
