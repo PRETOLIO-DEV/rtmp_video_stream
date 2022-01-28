@@ -46,7 +46,8 @@
 
 -(LFLiveVideoConfiguration *)configuration{
     long quality = MIN(8,MAX(0, self.quality));
-    return [LFLiveVideoConfiguration defaultConfigurationForQuality:quality outputImageOrientation:self.orientation == RtmpOrientationPortrait ? UIInterfaceOrientationPortrait : UIInterfaceOrientationLandscapeRight];
+    //return [LFLiveVideoConfiguration defaultConfigurationForQuality:quality outputImageOrientation:self.orientation == RtmpOrientationPortrait ? UIInterfaceOrientationPortrait : UIInterfaceOrientationLandscapeRight];
+      return [LFLiveVideoConfiguration defaultConfigurationForQuality:quality outputImageOrientation:UIInterfaceOrientationPortrait ];
 }
 
 @end
