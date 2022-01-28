@@ -27,4 +27,4 @@ flutter:
         package: com.marshalltechnology.video_stream
         pluginClass: RtmppublisherPlugin
       ios:
-        pluginClass: VideoStreamPlugin
+        pluginClass: FlutterRtmpPlugin
