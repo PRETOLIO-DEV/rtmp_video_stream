@@ -646,11 +646,11 @@ class Camera(
                 // Start capturing from the camera.
                 createCaptureSession(
                         CameraDevice.TEMPLATE_RECORD,
-                        Runnable { rtmpCamera!!.startStream(url) }
+                        Runnable { rtmpCamera.startStream(url) }
 //                        , rtmpCamera!!.inputSurface
                 )
             } else {
-                rtmpCamera!!.startStream(url)
+                rtmpCamera.startStream(url)
             }
             result.success(null)
         } catch (e: CameraAccessException) {
