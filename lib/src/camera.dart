@@ -272,7 +272,7 @@ class CameraValue {
   /// Convenience getter for `previewSize.height / previewSize.width`.
   ///
   /// Can only be called when [initialize] is done.
-  double get aspectRatio => previewSize!.height / previewSize!.width;
+  double get aspectRatio => previewSize == null ? 1.33 : previewSize!.height / previewSize!.width;
 
   bool get hasError => errorDescription != null;
 
