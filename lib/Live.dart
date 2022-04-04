@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:video_stream/src/camera.dart';
 import 'package:video_stream/src/flutter_rtmp.dart';
-export 'src/camera.dart' show CameraDescription, ResolutionPreset;
+export 'src/camera.dart' show CameraDescription, ResolutionPreset, CameraException;
 
 
 
