@@ -53,18 +53,23 @@ class LiveControler {
   }
 
   alterResolution(LiveConfig config) async {
+    bool _isInitialize = isInitialize;
     if(_isAndroid){
       await _controllerAndroid!.dispose();
       _controllerAndroid = config.ConfigAndroid();
-      await _controllerAndroid!.initialize();
+      if(_isInitialize){
+        await _controllerAndroid!.initialize();
+      }
     }else{
       await _controllerIos!.dispose();
       _controllerIos = config.ConfigIos();
-      await _controllerIos!.initConfig();
+      if (_isInitialize) {
+        await _controllerIos!.initConfig();
+      }
     }
     isStream = false;
     isMute = false;
-    isInitialize = true;
+    isInitialize = _isInitialize;
   }
 
   listenerAndroid(VoidCallback listener) {
