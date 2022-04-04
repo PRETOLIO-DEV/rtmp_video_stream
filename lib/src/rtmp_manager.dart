@@ -7,7 +7,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../flutter_rtmp.dart';
+import 'flutter_rtmp.dart';
 import '../src/models.dart';
 import 'def.dart';
 

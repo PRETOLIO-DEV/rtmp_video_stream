@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:video_stream/flutter_rtmp.dart';
+import 'package:video_stream/src/Flutter_rtmp.dart';
 import 'package:wakelock/wakelock.dart';
 
 

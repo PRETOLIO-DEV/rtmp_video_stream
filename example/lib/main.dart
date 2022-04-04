@@ -1,15 +1,13 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:video_stream/camera.dart';
+import 'package:video_stream/Live.dart';
 import 'dart:async';
-//
-// import 'package:flutter_rtmp/flutter_rtmp.dart';
 
 import '_main.dart';
 import 'home.dart';
 import 'utils/PhonePermissionUtils.dart';
-List<CameraDescription> cameras = [];
+List<CameraDescription>? cameras = [];
 void logError(String code, String message) =>
     print('Error: $code\nError Message: $message');
 
@@ -19,17 +17,16 @@ Future<void> main() async {
   //     statusBarColor: Colors.transparent, //设置为透明
   //   );
   //   SystemChrome.setSyst emUIOverlayStyle(systemUiOverlayStyle);
-  if(Platform.isAndroid){
-    try {
-      WidgetsFlutterBinding.ensureInitialized();
-      cameras = await availableCameras();
-    } on CameraException catch (e) {
-      logError(e.code, e.description);
-    }
+  try {
+    WidgetsFlutterBinding.ensureInitialized();
+    cameras = await LiveControler().getCamerasAndroid();
+  } on Exception catch(e) {
+    logError(e.toString(), e.toString());
   }
 
 
-  runApp(Platform.isAndroid ? CameraApp() : MyApp());
+
+  runApp(CameraApp());
 }
 
 class MyApp extends StatelessWidget {

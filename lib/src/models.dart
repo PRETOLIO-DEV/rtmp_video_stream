@@ -8,7 +8,13 @@
 import 'package:flutter/material.dart';
 
 class RtmpConfig {
-  RtmpVideoConfig videoConfig = RtmpVideoConfig();
+  RtmpConfig({
+    required this.videoConfig,
+    required this.audioConfig,
+  });
+  RtmpVideoConfig videoConfig = RtmpVideoConfig(
+    autoRotate: false, quality: 5, orientation: Orientation.portrait
+  );
   RtmpAudioConfig audioConfig = RtmpAudioConfig();
 
   Map toMap() {
@@ -20,7 +26,13 @@ class RtmpConfig {
 /// 暂未使用
 /// not used
 class RtmpVideoConfig {
-  // 自动旋转
+  RtmpVideoConfig({
+    required this.autoRotate,
+    required this.quality,
+    required this.orientation
+  });
+
+
   bool autoRotate = false;
 
   // 视频输出质量 0~8

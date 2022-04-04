@@ -5,11 +5,11 @@
 * ide : VSCode
 */
 
-export 'src/models.dart'
+export 'models.dart'
     show RtmpConfig, RtmpVideoConfig, RtmpAudioConfig, RtmpResponse;
 // export 'src/rtmp_manager.dart' show RtmpManager;
 // export 'src/rtmp_view.dart' show RtmpView;
 
 
-export 'src/rtmp_manager.dart' show RtmpManager ;
-export 'src/rtmp_view.dart' show RtmpView;
+export 'rtmp_manager.dart' show RtmpManager ;
+export 'rtmp_view.dart' show RtmpView;

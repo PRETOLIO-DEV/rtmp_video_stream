@@ -1,7 +1,8 @@
 import 'dart:async';
 
+import 'package:example/widget/custom_bottom_sheet.dart';
 import 'package:flutter/material.dart';
-import 'package:video_stream/camera.dart';
+import 'package:video_stream/Live.dart';
 import 'package:wakelock/wakelock.dart';
 
 import 'main.dart';
@@ -16,26 +17,15 @@ class CameraExampleHome extends StatefulWidget {
 }
 
 /// Returns a suitable camera icon for [direction].
-IconData getCameraLensIcon(CameraLensDirection direction) {
-  switch (direction) {
-    case CameraLensDirection.back:
-      return Icons.camera_rear;
-    case CameraLensDirection.front:
-      return Icons.camera_front;
-    case CameraLensDirection.external:
-      return Icons.camera;
-  }
-}
 
 void logError(String code, String message) =>
     print('Error: $code\nError Message: $message');
 
 class _CameraExampleHomeState extends State<CameraExampleHome>
     with WidgetsBindingObserver, TickerProviderStateMixin {
-  CameraController? controller =
-      CameraController(cameras.last, ResolutionPreset.high,androidUseOpenGL: true);
-  CameraController? controllerBack =
-    CameraController(cameras.first, ResolutionPreset.high,androidUseOpenGL: true);
+  LiveControler controler = LiveControler(config: LiveConfig(
+      resolutionPreset: ResolutionPreset.medium, cameras: cameras?.last));
+  ResolutionPreset resolution = ResolutionPreset.medium;
 
   String? imagePath;
   String? videoPath;
@@ -67,24 +57,11 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     cameraDirection = 'front';
     // controller = CameraController(cameras[1], Resolution.high);
 
-    controller!.addListener(() {
+    controler.listenerAndroid(() {
       if (mounted) setState(() {});
-      if (controller!.value.hasError) {
-        print('Camera error ${controller!.value.errorDescription}');
-        showInSnackBar('Camera error ${controller!.value.errorDescription}');
-        if (_timer != null) {
-          _timer!.cancel();
-          _timer = null;
-        }
-        Wakelock.disable();
-      }
-    });
-
-    controllerBack!.addListener(() {
-      if (mounted) setState(() {});
-      if (controller!.value.hasError) {
-        print('Camera error ${controller!.value.errorDescription}');
-        showInSnackBar('Camera error ${controller!.value.errorDescription}');
+      if (controler.getAndroidValues?.hasError ?? false) {
+        print('Camera error ${controler.getAndroidValues?.errorDescription}');
+        showInSnackBar('Camera error ${controler.getAndroidValues?.errorDescription}');
         if (_timer != null) {
           _timer!.cancel();
           _timer = null;
@@ -94,7 +71,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     });
 
     try{
-      await controller!.initialize();
+      await controler.initialize();
       //await controllerBack!.initialize();
     }catch(e){
       print(e);
@@ -168,7 +145,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
                               Icon(Icons.videocam),
                               SizedBox(width: 10),
                               Text(
-                                'Start Stream',
+                                'Start',
                                 style: TextStyle(
                                   fontSize: 20.0,
                                   fontWeight: FontWeight.bold,
@@ -187,6 +164,44 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
                         tooltip: 'Mute',
                         onPressed: () async {
                           await mute();
+                        },
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: IconButton(
+                        color: Theme.of(context).primaryColor,
+                        icon: const Icon(Icons.high_quality_outlined),
+                        tooltip: 'Resolucao',
+                        onPressed: () async {
+                          await CustomBottomSheet(context,
+                              Container(
+                                height: 200,
+                                color: Colors.white,
+                                alignment: Alignment.center,
+                                child:  DropdownButton<ResolutionPreset>(
+                                    value: resolution,
+                                    itemHeight: 50,
+                                    underline: Container(),
+                                    onChanged: (newValue) {
+                                      setState(() {
+                                        resolution = newValue!;
+                                      });
+                                    },
+                                    items: ResolutionPreset.values.map((ResolutionPreset classType) {
+                                      return DropdownMenuItem<ResolutionPreset>(
+                                          value: classType,
+                                          child: Container(
+                                            padding: EdgeInsets.only(left: 20, top: 5),
+                                            child: Text(classType.toString().replaceAll('ConfigBackup.', ''),
+                                              style: TextStyle(fontSize: 20, color: Colors.black,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                          ));
+                                    }).toList()
+                                ),
+                              ), false);
+                          await alterResolution();
                         },
                       ),
                     ),
@@ -214,7 +229,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
   /// Display the preview from the camera (or a message if the preview is not available).
   Widget _cameraPreviewWidget() {
     if(cameraDirection == 'front' ){
-      if (controller == null || !controller!.value.isInitialized) {
+      if (!controler.isInitialize) {
         return const Text(
           'Tap a camera',
           style: TextStyle(
@@ -224,13 +239,10 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
           ),
         );
       } else {
-        return AspectRatio(
-          aspectRatio: controller!.value.aspectRatio,
-          child: CameraPreview(controller!),
-        );
+        return controler.screem();
       }
     }else{
-      if (controllerBack == null || !controllerBack!.value.isInitialized) {
+      if (!controler.isInitialize) {
         return const Text(
           'Tap a camera',
           style: TextStyle(
@@ -240,10 +252,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
           ),
         );
       } else {
-        return AspectRatio(
-          aspectRatio: controllerBack!.value.aspectRatio,
-          child: CameraPreview(controllerBack!),
-        );
+        return controler.screem();
       }
     }
 
@@ -258,41 +267,33 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
 
   mute() async {
     enableAudio = !enableAudio;
-    cameraDirection == 'front'  ? await controller!.audio(enableAudio) : await controllerBack!.audio(enableAudio);
-    print('mute');
+    await controler.mute(enableAudio);
   }
+
+  alterResolution() async {
+    await controler.alterResolution(LiveConfig(
+        resolutionPreset: resolution, cameras: cameras?.last));
+    setState(() {});
+  }
+
   toggleCameraDirection() async {
-/*    if(cameraDirection == 'front'){
-      cameraDirection = 'back';
-      if(streaming && !controller!.value.isStreamingVideoRtmp) onVideoStreamingButtonPressed();
-    } else{
-      cameraDirection = 'front';
-      if(streaming && !controllerBack!.value.isStreamingVideoRtmp) onVideoStreamingButtonPressed();
-    }*/
-     await controller!.switchCamera();
+     await controler.switchCamera();
   }
 
   onNewCameraSelected(CameraDescription? cameraDescription) async {
-    if (controller != null) {
-      //if(streaming) controller!.pauseVideoStreaming();
-      await controller!.dispose();
-    }
+    await controler.dispose();
     if (cameraDescription == null) {
       print('cameraDescription is null');
     }
-    controller = CameraController(
-      cameraDescription ?? cameras.first,
-      ResolutionPreset.high,
-      enableAudio: enableAudio,
-      androidUseOpenGL: useOpenGL,
-    );
+    controler = LiveControler(config: LiveConfig(
+        resolutionPreset: ResolutionPreset.medium, cameras: cameraDescription));
 
     // If the controller is updated then update the UI.
-    controller!.addListener(() {
+    controler.listenerAndroid(() {
       if (mounted) setState(() {});
-      if (controller!.value.hasError) {
-        print('Camera error ${controller!.value.errorDescription}');
-        showInSnackBar('Camera error ${controller!.value.errorDescription}');
+      if (controler.getAndroidValues?.hasError ?? false) {
+        print('Camera error ${controler.getAndroidValues?.errorDescription}');
+        showInSnackBar('Camera error ${controler.getAndroidValues?.errorDescription}');
         if (_timer != null) {
           _timer!.cancel();
           _timer = null;
@@ -302,11 +303,11 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     });
 
     try {
-      await controller!.initialize();
+      await controler.initialize();
 
       if(streaming) onVideoStreamingButtonPressed();
       //if(streaming) await controller!.resumeVideoStreaming();
-    } on CameraException catch (e) {
+    } on Exception catch (e) {
       _showCameraException(e);
     }
 
@@ -354,7 +355,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
   }
 
   Future<String?> startVideoStreaming() async {
-    if (!controller!.value.isInitialized) {
+    if (!(controler.getAndroidValues?.isInitialized ?? false)) {
       showInSnackBar('Error: select a camera first.');
       return null;
     }
@@ -368,13 +369,12 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
         _timer = null;
       }
       url = myUrl;
-      cameraDirection == 'front'  ? await controller!.startVideoStreaming(url!, androidUseOpenGL: true) :
-        await controllerBack!.startVideoStreaming(url!, androidUseOpenGL: true);
+      await controler.start(url!);
       // _timer = Timer.periodic(Duration(seconds: 1), (timer) async {
       //   var stats = await controller!.getStreamStatistics();
       //   print(stats);
       // });
-    } on CameraException catch (e) {
+    } on Exception catch (e) {
       _showCameraException(e);
       return null;
     }
@@ -384,26 +384,26 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
   Future<void> stopVideoStreaming() async {
     try {
       //if(controller!.value.isStreamingVideoRtmp){
-        await controller!.stopVideoStreaming();
+        await controler.stop();
         if (_timer != null) {
           _timer!.cancel();
           _timer = null;
         }
       //}
-    } on CameraException catch (e) {
+    } on Exception catch (e) {
       _showCameraException(e);
       return;
     }
   }
 
   Future<void> pauseVideoStreaming() async {
-    if (!controller!.value.isStreamingVideoRtmp) {
+    if (!(controler.getAndroidValues?.isStreamingVideoRtmp ?? false)) {
       return;
     }
 
     try {
-      await controller!.pauseVideoStreaming();
-    } on CameraException catch (e) {
+      await controler.pause();
+    } on Exception catch (e) {
       _showCameraException(e);
       rethrow;
     }
@@ -411,16 +411,16 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
 
   Future<void> resumeVideoStreaming() async {
     try {
-      await controller!.resumeVideoStreaming();
-    } on CameraException catch (e) {
+      await controler.resume();
+    } on Exception catch (e) {
       _showCameraException(e);
       rethrow;
     }
   }
 
-  void _showCameraException(CameraException e) {
-    logError(e.code, e.description);
-    showInSnackBar('Error: ${e.code}\n${e.description}');
+  void _showCameraException(Exception e) {
+    logError(e.toString(), e.toString());
+    showInSnackBar('Error: ${e.toString()}\n${e.toString()}');
   }
 }
 

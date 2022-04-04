@@ -9,7 +9,7 @@ import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import '../flutter_rtmp.dart';
+import 'flutter_rtmp.dart';
 import '../src/rtmp_manager.dart';
 
 import 'def.dart';
