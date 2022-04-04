@@ -138,8 +138,10 @@ class LiveControler {
         child: CameraPreview(_controllerAndroid!),
       );
     }else{
-      return RtmpView(
-        manager: _controllerIos!,
+      return Stack(
+        children: [
+          RtmpView(manager: _controllerIos!),
+        ],
       );
     }
   }
