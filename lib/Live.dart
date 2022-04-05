@@ -24,9 +24,9 @@ class LiveControler {
   static RtmpManager? controllerIos;
   static CameraController? controllerAndroid;
 
-  bool isStream = false;
-  bool isInitialize = false;
-  bool isMute = false;
+  static bool isStream = false;
+  static bool isInitialize = false;
+  static bool isMute = false;
 
 
   Future<List<CameraDescription>?> getCamerasAndroid() async {
