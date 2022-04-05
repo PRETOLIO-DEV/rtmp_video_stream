@@ -29,11 +29,8 @@ class LiveControler {
   static bool isMute = false;
 
 
-  Future<List<CameraDescription>?> getCamerasAndroid() async {
-    if(_isAndroid){
-      return await availableCameras();
-    }
-  }
+  static Future<List<CameraDescription>?> getCamerasAndroid() async => await availableCameras();
+
 
   Future<void> initialize() async {
     if(_isAndroid){
