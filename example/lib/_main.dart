@@ -229,7 +229,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
   /// Display the preview from the camera (or a message if the preview is not available).
   Widget _cameraPreviewWidget() {
     if(cameraDirection == 'front' ){
-      if (!controler.isInitialize) {
+      if (!LiveControler.isInitialize) {
         return const Text(
           'Tap a camera',
           style: TextStyle(
@@ -242,7 +242,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
         return controler.screem();
       }
     }else{
-      if (!controler.isInitialize) {
+      if (!LiveControler.isInitialize) {
         return const Text(
           'Tap a camera',
           style: TextStyle(
