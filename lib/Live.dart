@@ -9,19 +9,20 @@ export 'src/camera.dart' show CameraDescription, ResolutionPreset, CameraExcepti
 
 
 class LiveControler {
+
   LiveControler({LiveConfig? config}){
     if(config != null){
       if(_isAndroid){
-        _controllerAndroid = config.ConfigAndroid();
+        controllerAndroid = config.ConfigAndroid();
       }else{
-        _controllerIos = config.ConfigIos();
+        controllerIos = config.ConfigIos();
       }
     }
   }
 
   final bool _isAndroid = Platform.isAndroid;
-  RtmpManager? _controllerIos;
-  CameraController? _controllerAndroid;
+  static RtmpManager? controllerIos;
+  static CameraController? controllerAndroid;
 
   bool isStream = false;
   bool isInitialize = false;
@@ -36,18 +37,18 @@ class LiveControler {
 
   Future<void> initialize() async {
     if(_isAndroid){
-      await _controllerAndroid!.initialize();
+      await controllerAndroid!.initialize();
     }else{
-      await _controllerIos!.initConfig();
+      await controllerIos!.initConfig();
     }
     isInitialize = true;
   }
 
   start(String url) async {
     if(_isAndroid){
-      await _controllerAndroid!.startVideoStreaming(url);
+      await controllerAndroid!.startVideoStreaming(url);
     }else{
-      await _controllerIos!.startLive(url);
+      await controllerIos!.startLive(url);
     }
     isStream = true;
   }
@@ -55,16 +56,16 @@ class LiveControler {
   alterResolution(LiveConfig config) async {
     bool _isInitialize = isInitialize;
     if(_isAndroid){
-      await _controllerAndroid!.dispose();
-      _controllerAndroid = config.ConfigAndroid();
+      await controllerAndroid!.dispose();
+      controllerAndroid = config.ConfigAndroid();
       if(_isInitialize){
-        await _controllerAndroid!.initialize();
+        await controllerAndroid!.initialize();
       }
     }else{
-      await _controllerIos!.dispose();
-      _controllerIos = config.ConfigIos();
+      await controllerIos!.dispose();
+      controllerIos = config.ConfigIos();
       if (_isInitialize) {
-        await _controllerIos!.initConfig();
+        await controllerIos!.initConfig();
       }
     }
     isStream = false;
@@ -74,63 +75,63 @@ class LiveControler {
 
   listenerAndroid(VoidCallback listener) {
     if(_isAndroid){
-      _controllerAndroid!.addListener(listener);
+      controllerAndroid!.addListener(listener);
     }
   }
 
   CameraValue? get getAndroidValues {
     if(_isAndroid){
-      return  _controllerAndroid!.value;
+      return  controllerAndroid!.value;
     }
   }
 
   stop() async {
     if(_isAndroid){
-      await _controllerAndroid!.stopVideoStreaming();
+      await controllerAndroid!.stopVideoStreaming();
     }else{
-      await _controllerIos!.stopLive();
+      await controllerIos!.stopLive();
     }
     isStream = false;
   }
 
   pause() async {
     if(_isAndroid){
-      await _controllerAndroid!.pauseVideoStreaming();
+      await controllerAndroid!.pauseVideoStreaming();
     }else{
-      await _controllerIos!.pauseLive();
+      await controllerIos!.pauseLive();
     }
   }
 
   resume() async {
     if(_isAndroid){
-      await _controllerAndroid!.resumeVideoStreaming();
+      await controllerAndroid!.resumeVideoStreaming();
     }else{
-      await _controllerIos!.resumeLive();
+      await controllerIos!.resumeLive();
     }
   }
 
   mute(bool isAudio) async {
     isMute = !isAudio;
     if(_isAndroid){
-      await _controllerAndroid!.audio(isAudio);
+      await controllerAndroid!.audio(isAudio);
     }else{
-      await _controllerIos!.mute();
+      await controllerIos!.mute();
     }
   }
 
   switchCamera() async {
     if(_isAndroid){
-      await _controllerAndroid!.switchCamera();
+      await controllerAndroid!.switchCamera();
     }else{
-      await _controllerIos!.switchCamera();
+      await controllerIos!.switchCamera();
     }
   }
 
   Future<void> dispose() async {
     if(_isAndroid){
-      await _controllerAndroid!.dispose();
+      await controllerAndroid!.dispose();
     }else{
-      await _controllerIos!.dispose();
+      await controllerIos!.dispose();
     }
     isStream = false;
     isInitialize = false;
@@ -139,13 +140,13 @@ class LiveControler {
   Widget screem(){
     if(_isAndroid){
       return AspectRatio(
-        aspectRatio: _controllerAndroid!.value.aspectRatio,
-        child: CameraPreview(_controllerAndroid!),
+        aspectRatio: controllerAndroid!.value.aspectRatio,
+        child: CameraPreview(controllerAndroid!),
       );
     }else{
       return Stack(
         children: [
-          RtmpView(manager: _controllerIos!),
+          RtmpView(manager: controllerIos!),
         ],
       );
     }
