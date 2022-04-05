@@ -76,19 +76,21 @@ CameraLensDirection _parseCameraLensDirection(String string) {
 /// Completes with a list of available cameras.
 ///
 /// May throw a [CameraException].
-Future<List<CameraDescription>> availableCameras() async {
-  try {
-    final List<Map<dynamic, dynamic>> cameras = await _channel
-        .invokeListMethod<Map<dynamic, dynamic>>('availableCameras') ?? [];
-    return cameras.map((Map<dynamic, dynamic> camera) {
-      return CameraDescription(
-        name: camera['name'],
-        lensDirection: _parseCameraLensDirection(camera['lensFacing']),
-        sensorOrientation: camera['sensorOrientation'],
-      );
-    }).toList();
-  } on PlatformException catch (e) {
-    throw CameraException(e.code, e.message.toString());
+Future<List<CameraDescription>?> availableCameras() async {
+  if(Platform.isAndroid){
+    try {
+      final List<Map<dynamic, dynamic>> cameras = await _channel
+          .invokeListMethod<Map<dynamic, dynamic>>('availableCameras') ?? [];
+      return cameras.map((Map<dynamic, dynamic> camera) {
+        return CameraDescription(
+          name: camera['name'],
+          lensDirection: _parseCameraLensDirection(camera['lensFacing']),
+          sensorOrientation: camera['sensorOrientation'],
+        );
+      }).toList();
+    } on PlatformException catch (e) {
+      throw CameraException(e.code, e.message.toString());
+    }
   }
 }
 

@@ -19,7 +19,7 @@ Future<void> main() async {
   //   SystemChrome.setSyst emUIOverlayStyle(systemUiOverlayStyle);
   try {
     WidgetsFlutterBinding.ensureInitialized();
-    cameras = await LiveControler().getCamerasAndroid();
+    cameras = await LiveControler.getCamerasAndroid();
   } on Exception catch(e) {
     logError(e.toString(), e.toString());
   }
