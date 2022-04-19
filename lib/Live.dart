@@ -41,7 +41,7 @@ class LiveControler {
     isInitialize = true;
   }
 
-  start(String url) async {
+  Future<void> start(String url) async {
     if(_isAndroid){
       await controllerAndroid!.startVideoStreaming(url);
     }else{
@@ -50,7 +50,7 @@ class LiveControler {
     isStream = true;
   }
 
-  alterResolution(LiveConfig config) async {
+  Future<void> alterResolution(LiveConfig config) async {
     bool _isInitialize = isInitialize;
     if(_isAndroid){
       await controllerAndroid!.dispose();
@@ -82,7 +82,7 @@ class LiveControler {
     }
   }
 
-  stop() async {
+  Future<void> stop() async {
     if(_isAndroid){
       await controllerAndroid!.stopVideoStreaming();
     }else{
@@ -91,7 +91,7 @@ class LiveControler {
     isStream = false;
   }
 
-  pause() async {
+  Future<void> pause() async {
     if(_isAndroid){
       await controllerAndroid!.pauseVideoStreaming();
     }else{
@@ -99,7 +99,7 @@ class LiveControler {
     }
   }
 
-  resume() async {
+  Future<void> resume() async {
     if(_isAndroid){
       await controllerAndroid!.resumeVideoStreaming();
     }else{
@@ -107,7 +107,7 @@ class LiveControler {
     }
   }
 
-  mute(bool isAudio) async {
+  Future<void> mute(bool isAudio) async {
     isMute = !isAudio;
     if(_isAndroid){
       await controllerAndroid!.audio(isAudio);
@@ -116,7 +116,7 @@ class LiveControler {
     }
   }
 
-  switchCamera() async {
+  Future<void> switchCamera() async {
     if(_isAndroid){
       await controllerAndroid!.switchCamera();
     }else{
