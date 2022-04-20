@@ -181,13 +181,13 @@ class LiveConfig {
       case ResolutionPreset.low:
         return 1;
       case ResolutionPreset.medium:
-        return 3;
+        return 2;
       case ResolutionPreset.high:
-        return 5;
+        return 4;
       case ResolutionPreset.veryHigh:
-        return 6;
+        return 5;
       case ResolutionPreset.ultraHigh:
-        return 8;
+        return 7;
       case ResolutionPreset.max:
         return 8;
     }
