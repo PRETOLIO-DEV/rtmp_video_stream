@@ -165,6 +165,7 @@ class LiveConfig {
   }
 
   RtmpManager ConfigIos(){
+    return RtmpManager();
     return RtmpManager(config: RtmpConfig(
         videoConfig: RtmpVideoConfig(
             autoRotate: false,
