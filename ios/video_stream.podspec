@@ -18,7 +18,7 @@ A rtmp plugin
   s.dependency 'Flutter'
   s.platform = :ios, '8.0'
 
-  s.dependency 'LFLiveKit'
+  s.dependency 'LFLiveKit', :git => 'https://github.com/asseconttecno/LFLiveKit.git'
   s.dependency 'MJExtension'
 
   # Flutter.framework does not contain a i386 slice. Only x86_64 simulators are supported.
