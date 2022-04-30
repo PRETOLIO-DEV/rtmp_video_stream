@@ -18,7 +18,26 @@ A rtmp plugin
   s.dependency 'Flutter'
   s.platform = :ios, '8.0'
 
-  s.dependency 'LFLiveKit', :path => '../LFLiveKit'
+
+  s.dependency 'LFLiveKit' do |ss|
+       ss.name         = "LFLiveKit"
+       ss.version      = "2.6"
+       ss.summary      = "LaiFeng ios Live. LFLiveKit."
+       ss.homepage     = "https://github.com/chenliming777"
+       ss.license      = { :type => "MIT", :file => "LICENSE" }
+       ss.author       = { "chenliming" => "chenliming777@qq.com" }
+       ss.platform     = :ios, "7.0"
+       ss.ios.deployment_target = "7.0"
+       ss.source       = { :git => "https://github.com/asseconttecno/LFLiveKit.git", :tag => "#{s.version}" }
+       ss.source_files  = "LFLiveKit/**/*.{h,m,mm,cpp,c}"
+       ss.public_header_files = ['LFLiveKit/*.h', 'LFLiveKit/objects/*.h', 'LFLiveKit/configuration/*.h']
+
+       ss.frameworks = "VideoToolbox", "AudioToolbox","AVFoundation","Foundation","UIKit"
+       ss.libraries = "c++", "z"
+
+       ss.requires_arc = true
+  end
+
   s.dependency 'MJExtension'
 
   # Flutter.framework does not contain a i386 slice. Only x86_64 simulators are supported.
