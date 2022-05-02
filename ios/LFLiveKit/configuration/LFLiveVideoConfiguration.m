@@ -42,7 +42,7 @@
         configuration.sessionPreset = LFCaptureSessionPreset360x640;
         configuration.videoFrameRate = 24;
         configuration.videoMaxFrameRate = 24;
-        configuration.videoMinFrameRate = 20;
+        configuration.videoMinFrameRate = 24;
         configuration.videoBitRate = 600 * 1000;
         configuration.videoMaxBitRate = 720 * 1000;
         configuration.videoMinBitRate = 500 * 1000;
@@ -75,7 +75,7 @@
         configuration.sessionPreset = LFCaptureSessionPreset540x960;
         configuration.videoFrameRate = 24;
         configuration.videoMaxFrameRate = 24;
-        configuration.videoMinFrameRate = 20;
+        configuration.videoMinFrameRate = 24;
         configuration.videoBitRate = 800 * 1000;
         configuration.videoMaxBitRate = 960 * 1000;
         configuration.videoMinBitRate = 500 * 1000;
@@ -108,7 +108,7 @@
         configuration.sessionPreset = LFCaptureSessionPreset720x1280;
         configuration.videoFrameRate = 24;
         configuration.videoMaxFrameRate = 24;
-        configuration.videoMinFrameRate = 20;
+        configuration.videoMinFrameRate = 24;
         configuration.videoBitRate = 1200 * 1000;
         configuration.videoMaxBitRate = 1440 * 1000;
         configuration.videoMinBitRate = 800 * 1000;
