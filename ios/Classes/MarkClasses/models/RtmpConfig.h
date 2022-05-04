@@ -6,7 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <LFLiveKit/LFLiveKit.h>
+#import <LFLiveKit.h>
 #import <MJExtension/MJExtension.h>
 
 NS_ASSUME_NONNULL_BEGIN
