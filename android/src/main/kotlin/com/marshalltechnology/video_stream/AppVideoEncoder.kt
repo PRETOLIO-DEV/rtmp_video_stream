@@ -44,7 +44,7 @@ class AppVideoEncoder(
 
     // for disable video
     private val fpsLimiter: FpsLimiter = FpsLimiter()
-    var type: String = CodecUtil.H265_MIME
+    var type: String = CodecUtil.H264_MIME
     private var handlerThread: HandlerThread = HandlerThread(TAG)
     protected var codec: MediaCodec? = null
     private var callback: MediaCodec.Callback? = null

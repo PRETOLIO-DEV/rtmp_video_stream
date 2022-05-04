@@ -119,7 +119,7 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val isPo
      * doesn't support any configuration seated or your device hasn't a H264 encoder).
      */
     @JvmOverloads
-    fun prepareVideo(width: Int, height: Int, fps: Int, bitrate: Int, hardwareRotation: Boolean,
+    fun prepareVideo(width: Int, height: Int, fps: Int, bitrate: Int = 920, hardwareRotation: Boolean,
                      iFrameInterval: Int, rotation: Int, avcProfile: Int = -1, avcProfileLevel: Int =
                              -1, aspectRatio: Double = 1.0): Boolean {
         pausedStreaming = false
@@ -129,7 +129,7 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val isPo
                 width,
                 height,
                 24,
-                bitrate,
+                if (bitrate > 1536) 1536 else bitrate,
                 if (useOpenGL) 0 else rotation,
                 hardwareRotation,
                 iFrameInterval,
