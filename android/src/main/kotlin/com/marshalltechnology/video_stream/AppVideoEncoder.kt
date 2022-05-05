@@ -92,7 +92,7 @@ class AppVideoEncoder(
             videoFormat.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, 0)
             videoFormat.setInteger(MediaFormat.KEY_BIT_RATE, bitrate)
             videoFormat.setInteger(MediaFormat.KEY_FRAME_RATE, fps)
-            videoFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 300)
+            videoFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 600)
             videoFormat.setInteger(MediaFormat.KEY_ROTATION, rotation)
             if (this.avcProfile > 0 && this.avcProfileLevel > 0) {
                 // MediaFormat.KEY_PROFILE, API > 21
