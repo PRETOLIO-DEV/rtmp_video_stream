@@ -42,10 +42,10 @@
         configuration.sessionPreset = LFCaptureSessionPreset360x640;
         configuration.videoFrameRate = 24;
         configuration.videoMaxFrameRate = 24;
-        configuration.videoMinFrameRate = 24;
-        configuration.videoBitRate = 600 * 1000;
-        configuration.videoMaxBitRate = 720 * 1000;
-        configuration.videoMinBitRate = 500 * 1000;
+        configuration.videoMinFrameRate = 15;
+        configuration.videoBitRate = 500 * 1000;
+        configuration.videoMaxBitRate = 600 * 1000;
+        configuration.videoMinBitRate = 400 * 1000;
         configuration.videoSize = CGSizeMake(360, 640);
     }
         break;
@@ -54,9 +54,9 @@
         configuration.videoFrameRate = 30;
         configuration.videoMaxFrameRate = 30;
         configuration.videoMinFrameRate = 24;
-        configuration.videoBitRate = 600 * 1000;
-        configuration.videoMaxBitRate = 720 * 1000;
-        configuration.videoMinBitRate = 500 * 1000;
+        configuration.videoBitRate = 500 * 1000;
+        configuration.videoMaxBitRate = 600 * 1000;
+        configuration.videoMinBitRate = 400 * 1000;
         configuration.videoSize = CGSizeMake(360, 640);
     }
         break;
@@ -75,10 +75,10 @@
         configuration.sessionPreset = LFCaptureSessionPreset540x960;
         configuration.videoFrameRate = 24;
         configuration.videoMaxFrameRate = 24;
-        configuration.videoMinFrameRate = 24;
-        configuration.videoBitRate = 600 * 1000;
-        configuration.videoMaxBitRate = 720 * 1000;
-        configuration.videoMinBitRate = 500 * 1000;
+        configuration.videoMinFrameRate = 15;
+        configuration.videoBitRate = 500 * 1000;
+        configuration.videoMaxBitRate = 600 * 1000;
+        configuration.videoMinBitRate = 400 * 1000;
         configuration.videoSize = CGSizeMake(540, 960);
     }
         break;
@@ -87,9 +87,9 @@
         configuration.videoFrameRate = 30;
         configuration.videoMaxFrameRate = 30;
         configuration.videoMinFrameRate = 24;
-        configuration.videoBitRate = 600 * 1000;
-        configuration.videoMaxBitRate = 720 * 1000;
-        configuration.videoMinBitRate = 500 * 1000;
+        configuration.videoBitRate = 500 * 1000;
+        configuration.videoMaxBitRate = 600 * 1000;
+        configuration.videoMinBitRate = 400 * 1000;
         configuration.videoSize = CGSizeMake(540, 960);
     }
         break;
@@ -98,9 +98,9 @@
         configuration.videoFrameRate = 15;
         configuration.videoMaxFrameRate = 15;
         configuration.videoMinFrameRate = 10;
-        configuration.videoBitRate = 600 * 1000;
-        configuration.videoMaxBitRate = 720 * 1000;
-        configuration.videoMinBitRate = 500 * 1000;
+        configuration.videoBitRate = 500 * 1000;
+        configuration.videoMaxBitRate = 600 * 1000;
+        configuration.videoMinBitRate = 400 * 1000;
         configuration.videoSize = CGSizeMake(720, 1280);
     }
         break;
@@ -108,10 +108,10 @@
         configuration.sessionPreset = LFCaptureSessionPreset720x1280;
         configuration.videoFrameRate = 24;
         configuration.videoMaxFrameRate = 24;
-        configuration.videoMinFrameRate = 24;
-        configuration.videoBitRate = 600 * 1000;
-        configuration.videoMaxBitRate = 720 * 1000;
-        configuration.videoMinBitRate = 500 * 1000;
+        configuration.videoMinFrameRate = 15;
+        configuration.videoBitRate = 500 * 1000;
+        configuration.videoMaxBitRate = 600 * 1000;
+        configuration.videoMinBitRate = 400 * 1000;
         configuration.videoSize = CGSizeMake(720, 1280);
     }
         break;
@@ -120,9 +120,9 @@
         configuration.videoFrameRate = 30;
         configuration.videoMaxFrameRate = 30;
         configuration.videoMinFrameRate = 24;
-        configuration.videoBitRate = 600 * 1000;
-        configuration.videoMaxBitRate = 720 * 1000;
-        configuration.videoMinBitRate = 500 * 1000;
+        configuration.videoBitRate = 500 * 1000;
+        configuration.videoMaxBitRate = 600 * 1000;
+        configuration.videoMinBitRate = 400 * 1000;
         configuration.videoSize = CGSizeMake(720, 1280);
     }
         break;
