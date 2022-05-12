@@ -180,17 +180,17 @@ class LiveConfig {
   int presetInt(ResolutionPreset resolutionPreset){
     switch (resolutionPreset) {
       case ResolutionPreset.low:
-        return 1;
+        return 0;
       case ResolutionPreset.medium:
-        return 2;
+        return 1;
       case ResolutionPreset.high:
-        return 4;
+        return 2;
       case ResolutionPreset.veryHigh:
-        return 5;
+        return 3;
       case ResolutionPreset.ultraHigh:
-        return 7;
+        return 4;
       case ResolutionPreset.max:
-        return 8;
+        return 5;
     }
   }
 }
