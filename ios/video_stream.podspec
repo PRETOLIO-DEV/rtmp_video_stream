@@ -16,7 +16,7 @@ A rtmp plugin
   s.source_files = 'Classes/**/*'
   s.public_header_files = 'Classes/**/*.h'
   s.dependency 'Flutter'
-  s.platform = :ios, '10.0'
+  s.platform = :ios, '12.0'
 
 
   s.subspec 'LFLiveKit' do |ss|
