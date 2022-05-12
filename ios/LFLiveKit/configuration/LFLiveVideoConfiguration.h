@@ -40,7 +40,7 @@ typedef NS_ENUM (NSUInteger, LFLiveVideoQuality){
     /// 分辨率： 540 *960 帧数：30 码率：800Kps
     LFLiveVideoQuality_6 = 5,
 
-    LFLiveVideoQuality_Default = LFLiveVideoQuality_Low2
+    LFLiveVideoQuality_Default = LFLiveVideoQuality_1
 };
 
 @interface LFLiveVideoConfiguration : NSObject<NSCoding, NSCopying>
