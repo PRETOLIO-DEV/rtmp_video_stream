@@ -27,70 +27,103 @@
 + (instancetype)defaultConfigurationForQuality:(LFLiveVideoQuality)videoQuality outputImageOrientation:(UIInterfaceOrientation)outputImageOrientation {
     LFLiveVideoConfiguration *configuration = [LFLiveVideoConfiguration new];
     switch (videoQuality) {
-    case LFLiveVideoQuality_1:{
-        configuration.sessionPreset = LFCaptureSessionPreset320x240;
-        configuration.videoFrameRate = 24;
-        configuration.videoMaxFrameRate = 24;
-        configuration.videoMinFrameRate = 15;
-        configuration.videoBitRate = 500 * 1000;
-        configuration.videoMaxBitRate = 600 * 1000;
-        configuration.videoMinBitRate = 400 * 1000;
-        configuration.videoSize = CGSizeMake(240, 320);
-    }
-        break;
-    case LFLiveVideoQuality_2:{
-        configuration.sessionPreset = LFCaptureSessionPreset640x480;
-        configuration.videoFrameRate = 24;
-        configuration.videoMaxFrameRate = 24;
-        configuration.videoMinFrameRate = 15;
+    case LFLiveVideoQuality_Low1:{
+        configuration.sessionPreset = LFCaptureSessionPreset360x640;
+        configuration.videoFrameRate = 15;
+        configuration.videoMaxFrameRate = 15;
+        configuration.videoMinFrameRate = 10;
         configuration.videoBitRate = 500 * 1000;
         configuration.videoMaxBitRate = 600 * 1000;
         configuration.videoMinBitRate = 400 * 1000;
         configuration.videoSize = CGSizeMake(360, 640);
     }
         break;
-    case LFLiveVideoQuality_3: {
-        configuration.sessionPreset = LFCaptureSessionPreset960x540;
+    case LFLiveVideoQuality_Low2:{
+        configuration.sessionPreset = LFCaptureSessionPreset360x640;
         configuration.videoFrameRate = 24;
         configuration.videoMaxFrameRate = 24;
+        configuration.videoMinFrameRate = 12;
+        configuration.videoBitRate = 600 * 1000;
+        configuration.videoMaxBitRate = 720 * 1000;
+        configuration.videoMinBitRate = 500 * 1000;
+        configuration.videoSize = CGSizeMake(360, 640);
+    }
+        break;
+    case LFLiveVideoQuality_Low3: {
+        configuration.sessionPreset = LFCaptureSessionPreset360x640;
+        configuration.videoFrameRate = 30;
+        configuration.videoMaxFrameRate = 30;
         configuration.videoMinFrameRate = 15;
-        configuration.videoBitRate = 500 * 1000;
-        configuration.videoMaxBitRate = 600 * 1000;
-        configuration.videoMinBitRate = 400 * 1000;
+        configuration.videoBitRate = 800 * 1000;
+        configuration.videoMaxBitRate = 960 * 1000;
+        configuration.videoMinBitRate = 600 * 1000;
+        configuration.videoSize = CGSizeMake(360, 640);
+    }
+        break;
+    case LFLiveVideoQuality_Medium1:{
+        configuration.sessionPreset = LFCaptureSessionPreset540x960;
+        configuration.videoFrameRate = 15;
+        configuration.videoMaxFrameRate = 15;
+        configuration.videoMinFrameRate = 10;
+        configuration.videoBitRate = 800 * 1000;
+        configuration.videoMaxBitRate = 960 * 1000;
+        configuration.videoMinBitRate = 500 * 1000;
         configuration.videoSize = CGSizeMake(540, 960);
     }
         break;
-    case LFLiveVideoQuality_4:{
-        configuration.sessionPreset = LFCaptureSessionPreset1280x720;
+    case LFLiveVideoQuality_Medium2:{
+        configuration.sessionPreset = LFCaptureSessionPreset540x960;
         configuration.videoFrameRate = 24;
         configuration.videoMaxFrameRate = 24;
+        configuration.videoMinFrameRate = 12;
+        configuration.videoBitRate = 800 * 1000;
+        configuration.videoMaxBitRate = 960 * 1000;
+        configuration.videoMinBitRate = 500 * 1000;
+        configuration.videoSize = CGSizeMake(540, 960);
+    }
+        break;
+    case LFLiveVideoQuality_Medium3:{
+        configuration.sessionPreset = LFCaptureSessionPreset540x960;
+        configuration.videoFrameRate = 30;
+        configuration.videoMaxFrameRate = 30;
         configuration.videoMinFrameRate = 15;
-        configuration.videoBitRate = 500 * 1000;
-        configuration.videoMaxBitRate = 600 * 1000;
-        configuration.videoMinBitRate = 400 * 1000;
+        configuration.videoBitRate = 1000 * 1000;
+        configuration.videoMaxBitRate = 1200 * 1000;
+        configuration.videoMinBitRate = 500 * 1000;
+        configuration.videoSize = CGSizeMake(540, 960);
+    }
+        break;
+    case LFLiveVideoQuality_High1:{
+        configuration.sessionPreset = LFCaptureSessionPreset720x1280;
+        configuration.videoFrameRate = 15;
+        configuration.videoMaxFrameRate = 15;
+        configuration.videoMinFrameRate = 10;
+        configuration.videoBitRate = 1000 * 1000;
+        configuration.videoMaxBitRate = 1200 * 1000;
+        configuration.videoMinBitRate = 500 * 1000;
         configuration.videoSize = CGSizeMake(720, 1280);
     }
         break;
-    case LFLiveVideoQuality_5:{
-        configuration.sessionPreset = LFCaptureSessionPreset1920x1080;
+    case LFLiveVideoQuality_High2:{
+        configuration.sessionPreset = LFCaptureSessionPreset720x1280;
         configuration.videoFrameRate = 24;
         configuration.videoMaxFrameRate = 24;
-        configuration.videoMinFrameRate = 15;
-        configuration.videoBitRate = 500 * 1000;
-        configuration.videoMaxBitRate = 600 * 1000;
-        configuration.videoMinBitRate = 400 * 1000;
-        configuration.videoSize = CGSizeMake(1080, 1920);
+        configuration.videoMinFrameRate = 12;
+        configuration.videoBitRate = 1200 * 1000;
+        configuration.videoMaxBitRate = 1440 * 1000;
+        configuration.videoMinBitRate = 800 * 1000;
+        configuration.videoSize = CGSizeMake(720, 1280);
     }
         break;
-    case LFLiveVideoQuality_6:{
-        configuration.sessionPreset = LFCaptureSessionPreset3840x2160;
-        configuration.videoFrameRate = 24;
-        configuration.videoMaxFrameRate = 24;
+    case LFLiveVideoQuality_High3:{
+        configuration.sessionPreset = LFCaptureSessionPreset720x1280;
+        configuration.videoFrameRate = 30;
+        configuration.videoMaxFrameRate = 30;
         configuration.videoMinFrameRate = 15;
-        configuration.videoBitRate = 500 * 1000;
-        configuration.videoMaxBitRate = 600 * 1000;
-        configuration.videoMinBitRate = 400 * 1000;
-        configuration.videoSize = CGSizeMake(2160, 3840);
+        configuration.videoBitRate = 1200 * 1000;
+        configuration.videoMaxBitRate = 1440 * 1000;
+        configuration.videoMinBitRate = 500 * 1000;
+        configuration.videoSize = CGSizeMake(720, 1280);
     }
         break;
     default:
@@ -113,31 +146,18 @@
 - (NSString *)avSessionPreset {
     NSString *avSessionPreset = nil;
     switch (self.sessionPreset) {
-    case LFCaptureSessionPreset320x240:{
-        avSessionPreset = AVCaptureSessionPreset352x288;
-    }
-        break;
-    case LFCaptureSessionPreset640x480:{
+    case LFCaptureSessionPreset360x640:{
         avSessionPreset = AVCaptureSessionPreset640x480;
     }
         break;
-    case LFCaptureSessionPreset960x540:{
+    case LFCaptureSessionPreset540x960:{
         avSessionPreset = AVCaptureSessionPresetiFrame960x540;
     }
         break;
-    case LFCaptureSessionPreset1280x720:{
+    case LFCaptureSessionPreset720x1280:{
         avSessionPreset = AVCaptureSessionPreset1280x720;
     }
         break;
-    case LFCaptureSessionPreset1920x1080:{
-        avSessionPreset = AVCaptureSessionPreset1920x1080;
-    }
-        break;
-    case LFCaptureSessionPreset3840x2160:{
-        avSessionPreset = AVCaptureSessionPreset3840x2160;
-    }
-        break;
-
     default: {
         avSessionPreset = AVCaptureSessionPreset640x480;
     }
@@ -199,13 +219,13 @@
     }
     
     if (![session canSetSessionPreset:self.avSessionPreset]) {
-        if (sessionPreset == LFCaptureSessionPreset1280x720) {
-            sessionPreset = LFCaptureSessionPreset960x540;
+        if (sessionPreset == LFCaptureSessionPreset720x1280) {
+            sessionPreset = LFCaptureSessionPreset540x960;
             if (![session canSetSessionPreset:self.avSessionPreset]) {
-                sessionPreset = LFCaptureSessionPreset640x480;
+                sessionPreset = LFCaptureSessionPreset360x640;
             }
-        } else if (sessionPreset == LFCaptureSessionPreset960x540) {
-            sessionPreset = LFCaptureSessionPreset640x480;
+        } else if (sessionPreset == LFCaptureSessionPreset540x960) {
+            sessionPreset = LFCaptureSessionPreset360x640;
         }
     }
     return sessionPreset;
@@ -214,30 +234,19 @@
 - (CGSize)captureOutVideoSize{
     CGSize videoSize = CGSizeZero;
     switch (_sessionPreset) {
-        case LFCaptureSessionPreset320x240:{
-            videoSize = CGSizeMake(240, 320);
-        }
-            break;
-        case LFCaptureSessionPreset640x480:{
+        case LFCaptureSessionPreset360x640:{
             videoSize = CGSizeMake(360, 640);
         }
             break;
-        case LFCaptureSessionPreset960x540:{
+        case LFCaptureSessionPreset540x960:{
             videoSize = CGSizeMake(540, 960);
         }
             break;
-        case LFCaptureSessionPreset1280x720:{
+        case LFCaptureSessionPreset720x1280:{
             videoSize = CGSizeMake(720, 1280);
         }
-           break;
-        case LFCaptureSessionPreset1920x1080:{
-           videoSize = CGSizeMake(1080, 1920);
-        }
-           break;
-        case LFCaptureSessionPreset3840x2160:{
-           videoSize = CGSizeMake(2160, 3840);
-        }
-           break;
+            break;
+            
         default:{
             videoSize = CGSizeMake(360, 640);
         }
