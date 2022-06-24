@@ -269,6 +269,7 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val isPo
         pausedStreaming = true
     }
 
+
     fun resumeStream() {
         pausedStreaming = false
     }

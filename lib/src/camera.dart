@@ -982,8 +982,7 @@ class CameraController extends ValueNotifier<CameraValue> {
     try {
       value = value.copyWith(isStreamingPaused: false);
       await _channel.invokeMethod<void>(
-        'resumeVideoStreaming',
-        <String, dynamic>{'textureId': _textureId},
+        'resumeVideoStreaming'
       );
     } on PlatformException catch (e) {
       throw CameraException(e.code, e.message.toString());

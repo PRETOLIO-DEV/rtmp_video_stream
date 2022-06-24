@@ -109,6 +109,14 @@
     self.socket = nil;
 }
 
+- (void)pause {
+    self.uploading = NO;
+}
+
+- (void)resume {
+    self.uploading = YES;
+}
+
 - (void)pushVideo:(nullable CVPixelBufferRef)pixelBuffer{
     if(self.captureType & LFLiveInputMaskVideo){
         if (self.uploading) [self.videoEncoder encodeVideoData:pixelBuffer timeStamp:NOW];

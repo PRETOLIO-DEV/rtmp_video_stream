@@ -161,12 +161,33 @@ class CameraNativeView(
         startVideoStreaming(url, result)
     }
 
-    fun pauseVideoStreaming(result: Any) {
-        // TODO: Implement pause video streaming
+    fun pauseVideoStreaming(result: MethodChannel.Result) {
+        if (rtmpCamera == null || !rtmpCamera!!.isStreaming) {
+            result.success(null)
+        }
+        try {
+            rtmpCamera.stopPreview()
+        } catch (e: CameraAccessException) {
+            result.error("pauseVideoStreaming", e.message, null)
+        } catch (e: IllegalStateException) {
+            result.error("pauseVideoStreaming", e.message, null)
+        }
+        result.success(null)
     }
 
-    fun resumeVideoStreaming(result: Any) {
-        // TODO: Implement resume video streaming
+    fun resumeVideoStreaming(result: MethodChannel.Result) {
+        if (rtmpCamera == null || !rtmpCamera!!.isStreaming) {
+            result.success(null)
+        }
+        try {
+            //rtmpCamera.stopPreview()
+            startPreview()
+        } catch (e: CameraAccessException) {
+            result.error("resumeVideoStreaming", e.message, null)
+        } catch (e: IllegalStateException) {
+            result.error("resumeVideoStreaming", e.message, null)
+        }
+        result.success(null)
     }
 
     fun stopVideoRecordingOrStreaming(result: MethodChannel.Result) {

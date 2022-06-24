@@ -31,7 +31,21 @@ class _HomePageState extends State<HomePage> {
     Wakelock.disable();
   }
 
+  pauseVideoStream() async {
+    print('startVideoStream');
+    await _manager!.resumeLive();
+    setState(() {
+      isStreaming = true;
+    });
+  }
 
+  resumeVideoStream() async {
+    print('startVideoStream');
+    await _manager!.resumeLive();
+    setState(() {
+      isStreaming = true;
+    });
+  }
 
   startVideoStream() async {
     print('startVideoStream');
@@ -69,10 +83,11 @@ class _HomePageState extends State<HomePage> {
         child: Stack(
           // fit: StackFit.expand,
           children: <Widget>[
+
             RtmpView(
               manager: _manager!,
             ),
-            this.buttonArea()
+            this.buttonArea(),
           ],
         ),
       ),
@@ -81,12 +96,11 @@ class _HomePageState extends State<HomePage> {
 
   Widget buttonArea() {
     return Container(
-      // alignment: Alignment(0, 0),
-      child: Wrap(
-        spacing: 20,
-        // runSpacing: 20,
+      child: Column(
         children: <Widget>[
-          this.switchCameraWidget(),
+          cameraWidget(),
+          switchCameraWidget(),
+          cameraWidget(),
         ],
       ),
     );
@@ -137,4 +151,28 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget cameraWidget() {
+    return Container(
+      color: Colors.white,
+      child: new Row(
+        // verticalDirection: VerticalDirection.up,
+        children: <Widget>[
+          Container(
+            child: GestureDetector(
+              child: Icon(Icons.start, size: 60,),
+              onTap: () => {resumeVideoStream()},
+            ),
+            width: (60),
+          ),
+          Container(
+            child: GestureDetector(
+              child: Icon(Icons.pause, size: 60,),
+              onTap: () => {pauseVideoStream()},
+            ),
+            width: (60),
+          ),
+        ],
+      ),
+    );
+  }
 }

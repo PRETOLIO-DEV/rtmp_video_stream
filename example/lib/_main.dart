@@ -109,111 +109,148 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
                 top: 0.0,
                 left: 0.0,
                 right: 0.0,
-                child: AppBar(
-                  backgroundColor: Colors.transparent,
-                  elevation: 0.0,
-                  title: streaming
-                      ? ElevatedButton(
-                          onPressed: () => onStopButtonPressed(),
-                          style: ButtonStyle(
-                              backgroundColor:
-                                  MaterialStateProperty.all<Color>(Colors.red)),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
-                              Icon(Icons.videocam_off),
-                              SizedBox(width: 10),
-                              Text(
-                                'End Stream',
-                                style: TextStyle(
-                                  fontSize: 20.0,
-                                  fontWeight: FontWeight.bold,
-                                  decoration: TextDecoration.underline,
-                                ),
+                child: Column(
+                  children: [
+                    AppBar(
+                      backgroundColor: Colors.transparent,
+                      elevation: 0.0,
+                      title: streaming
+                          ? ElevatedButton(
+                              onPressed: () => onStopButtonPressed(),
+                              style: ButtonStyle(
+                                  backgroundColor:
+                                      MaterialStateProperty.all<Color>(Colors.red)),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: const [
+                                  Icon(Icons.videocam_off),
+                                  SizedBox(width: 10),
+                                  Text(
+                                    'End Stream',
+                                    style: TextStyle(
+                                      fontSize: 20.0,
+                                      fontWeight: FontWeight.bold,
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                        )
-                      : ElevatedButton(
-                          onPressed: () => onVideoStreamingButtonPressed(),
-                          style: ButtonStyle( backgroundColor: MaterialStateProperty.all<Color>(Colors.blue)),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
-                              Icon(Icons.videocam),
-                              SizedBox(width: 10),
-                              Text(
-                                'Start',
-                                style: TextStyle(
-                                  fontSize: 20.0,
-                                  fontWeight: FontWeight.bold,
-                                  decoration: TextDecoration.underline,
-                                ),
+                            )
+                          : ElevatedButton(
+                              onPressed: () => onVideoStreamingButtonPressed(),
+                              style: ButtonStyle( backgroundColor: MaterialStateProperty.all<Color>(Colors.blue)),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: const [
+                                  Icon(Icons.videocam),
+                                  SizedBox(width: 10),
+                                  Text(
+                                    'Start',
+                                    style: TextStyle(
+                                      fontSize: 20.0,
+                                      fontWeight: FontWeight.bold,
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
+                            ),
+                      actions: [
+                        Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: IconButton(
+                            color: Theme.of(context).primaryColor,
+                            icon: const Icon(Icons.mic),
+                            tooltip: 'Mute',
+                            onPressed: () async {
+                              await mute();
+                            },
                           ),
                         ),
-                  actions: [
-                    Padding(
-                      padding: const EdgeInsets.all(10.0),
-                      child: IconButton(
-                        color: Theme.of(context).primaryColor,
-                        icon: const Icon(Icons.mic),
-                        tooltip: 'Mute',
-                        onPressed: () async {
-                          await mute();
-                        },
-                      ),
+                        Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: IconButton(
+                            color: Theme.of(context).primaryColor,
+                            icon: const Icon(Icons.high_quality_outlined),
+                            tooltip: 'Resolucao',
+                            onPressed: () async {
+                              await CustomBottomSheet(context,
+                                  Container(
+                                    height: 200,
+                                    color: Colors.white,
+                                    alignment: Alignment.center,
+                                    child:  DropdownButton<ResolutionPreset>(
+                                        value: resolution,
+                                        itemHeight: 50,
+                                        underline: Container(),
+                                        onChanged: (newValue) {
+                                          setState(() {
+                                            resolution = newValue!;
+                                          });
+                                        },
+                                        items: ResolutionPreset.values.map((ResolutionPreset classType) {
+                                          return DropdownMenuItem<ResolutionPreset>(
+                                              value: classType,
+                                              child: Container(
+                                                padding: EdgeInsets.only(left: 20, top: 5),
+                                                child: Text(classType.toString().replaceAll('ConfigBackup.', ''),
+                                                  style: TextStyle(fontSize: 20, color: Colors.black,
+                                                      fontWeight: FontWeight.bold),
+                                                ),
+                                              ));
+                                        }).toList()
+                                    ),
+                                  ), false);
+                              await alterResolution();
+                            },
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: IconButton(
+                            color: Theme.of(context).primaryColor,
+                            icon: const Icon(Icons.switch_video),
+                            tooltip: 'Switch Camera',
+                            onPressed: () async {
+                              await toggleCameraDirection();
+                            },
+
+                          ),
+                        ),
+                      ],
                     ),
+
                     Padding(
-                      padding: const EdgeInsets.all(10.0),
-                      child: IconButton(
-                        color: Theme.of(context).primaryColor,
-                        icon: const Icon(Icons.high_quality_outlined),
-                        tooltip: 'Resolucao',
-                        onPressed: () async {
-                          await CustomBottomSheet(context,
-                              Container(
-                                height: 200,
-                                color: Colors.white,
-                                alignment: Alignment.center,
-                                child:  DropdownButton<ResolutionPreset>(
-                                    value: resolution,
-                                    itemHeight: 50,
-                                    underline: Container(),
-                                    onChanged: (newValue) {
-                                      setState(() {
-                                        resolution = newValue!;
-                                      });
-                                    },
-                                    items: ResolutionPreset.values.map((ResolutionPreset classType) {
-                                      return DropdownMenuItem<ResolutionPreset>(
-                                          value: classType,
-                                          child: Container(
-                                            padding: EdgeInsets.only(left: 20, top: 5),
-                                            child: Text(classType.toString().replaceAll('ConfigBackup.', ''),
-                                              style: TextStyle(fontSize: 20, color: Colors.black,
-                                                  fontWeight: FontWeight.bold),
-                                            ),
-                                          ));
-                                    }).toList()
-                                ),
-                              ), false);
-                          await alterResolution();
-                        },
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(10.0),
-                      child: IconButton(
-                        color: Theme.of(context).primaryColor,
-                        icon: const Icon(Icons.switch_video),
-                        tooltip: 'Switch Camera',
-                        onPressed: () async {
-                          await toggleCameraDirection();
-                        },
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: IconButton(
+                              color: Theme.of(context).primaryColor,
+                              icon: const Icon(Icons.not_started_outlined),
+                              tooltip: 'resume',
+                              onPressed: () async {
+                                await resume();
+                              },
+
+                            ),
+                          ),
+
+                          Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: IconButton(
+                              color: Theme.of(context).primaryColor,
+                              icon: const Icon(Icons.pause),
+                              tooltip: 'pause',
+                              onPressed: () async {
+                                await pause();
+                              },
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -276,9 +313,19 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     setState(() {});
   }
 
-  toggleCameraDirection() async {
-     await controler.switchCamera();
+  resume() async {
+     await controler.resume();
   }
+
+  pause() async {
+    await controler.pause();
+  }
+
+
+  toggleCameraDirection() async {
+    await controler.switchCamera();
+  }
+
 
   onNewCameraSelected(CameraDescription? cameraDescription) async {
     await controler.dispose();
