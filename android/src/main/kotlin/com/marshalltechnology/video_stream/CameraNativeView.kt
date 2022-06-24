@@ -166,8 +166,8 @@ class CameraNativeView(
             result.success(null)
         }
         try {
-            rtmpCamera.getGlInterface().muteVideo();
-            rtmpCamera.disableAudio();
+            rtmpCamera.getGlInterface().muteVideo()
+            rtmpCamera.disableAudio()
         } catch (e: CameraAccessException) {
             result.error("pauseVideoStreaming", e.message, null)
         } catch (e: IllegalStateException) {
