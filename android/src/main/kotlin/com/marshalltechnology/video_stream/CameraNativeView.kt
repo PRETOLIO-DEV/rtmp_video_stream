@@ -166,7 +166,8 @@ class CameraNativeView(
             result.success(null)
         }
         try {
-            rtmpCamera.stopPreview()
+            rtmpCamera.getGlInterface().muteVideo();
+            rtmpCamera.disableAudio();
         } catch (e: CameraAccessException) {
             result.error("pauseVideoStreaming", e.message, null)
         } catch (e: IllegalStateException) {
@@ -180,8 +181,7 @@ class CameraNativeView(
             result.success(null)
         }
         try {
-            //rtmpCamera.stopPreview()
-            startPreview()
+            rtmpCamera.getGlInterface().unMuteVideo
         } catch (e: CameraAccessException) {
             result.error("resumeVideoStreaming", e.message, null)
         } catch (e: IllegalStateException) {
