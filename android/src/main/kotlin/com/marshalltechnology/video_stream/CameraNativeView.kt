@@ -181,7 +181,7 @@ class CameraNativeView(
             result.success(null)
         }
         try {
-            rtmpCamera.getGlInterface().unMuteVideo
+            rtmpCamera.getGlInterface().unMuteVideo()
         } catch (e: CameraAccessException) {
             result.error("resumeVideoStreaming", e.message, null)
         } catch (e: IllegalStateException) {
