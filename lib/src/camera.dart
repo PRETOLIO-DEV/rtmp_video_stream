@@ -399,7 +399,7 @@ class CameraController extends ValueNotifier<CameraValue> {
       //if(Platform.isAndroid){
         await _channel.invokeMapMethod<String, dynamic>('mute',
           <String, dynamic>{
-            'mute': Platform.isAndroid ? enable : !enable
+            'mute': enable
           },
         );
 /*      }else{

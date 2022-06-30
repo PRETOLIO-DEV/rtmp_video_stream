@@ -102,6 +102,7 @@ class LiveControler {
   Future<void> resume() async {
     if(_isAndroid){
       await controllerAndroid!.resumeVideoStreaming();
+      if(!isMute) await mute(true);
     }else{
       await controllerIos!.resumeLive();
     }

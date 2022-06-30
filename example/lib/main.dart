@@ -1,42 +1,48 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:video_stream/Live.dart';
+import 'package:flutter/services.dart';
 import 'dart:async';
 
-import '_main.dart';
-import 'home.dart';
-import 'utils/PhonePermissionUtils.dart';
+import 'package:video_stream/Live.dart';
+import 'package:provider/provider.dart';
+
+import 'controllers/livecam.dart';
+import 'route_generator.dart';
+import '../utils/PhonePermissionUtils.dart';
+
 List<CameraDescription>? cameras = [];
-void logError(String code, String message) =>
-    print('Error: $code\nError Message: $message');
 
 Future<void> main() async {
-  // if (Platform.isAndroid) {
-  //   SystemUiOverlayStyle systemUiOverlayStyle = SystemUiOverlayStyle(
-  //     statusBarColor: Colors.transparent, //设置为透明
-  //   );
-  //   SystemChrome.setSyst emUIOverlayStyle(systemUiOverlayStyle);
-  try {
-    WidgetsFlutterBinding.ensureInitialized();
-    cameras = await LiveControler.getCamerasAndroid();
-  } on Exception catch(e) {
-    logError(e.toString(), e.toString());
-  }
+  WidgetsFlutterBinding.ensureInitialized();
+  await PhonePermissionUtils.checkPermission();
+  cameras = await LiveControler.getCamerasAndroid();
 
-
-
-  runApp(CameraApp());
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).
+  then((_) {
+    runApp(MultiProvider(providers: [
+        ChangeNotifierProvider(
+          lazy: false,
+          create: (_)=> LiveCam(),
+        ),
+      ], child: MyApp(),
+    ));
+  });
 }
 
 class MyApp extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
-    // PhonePermissionUtils.checkPermission;
-    PhonePermissionUtils.checkPermission().then((onValue) {});
     return MaterialApp(
-      // debugShowCheckedModeBanner: false,
-      home: HomePage(),
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(fontFamily: 'Calibri'),
+      title: 'Live Commerce',
+      initialRoute: '/',
+      onGenerateRoute: RouteGenerator.generateRoute,
     );
   }
 }
+
+
+// rtmp://qa-livecommerce.cliqx.com.br:1935/live/a3f73259f6ab43cea627e6e1cd24769e
+// https://qa-livecommerce.cliqx.com.br:19588/hls/a3f73259f6ab43cea627e6e1cd24769e.m3u8
