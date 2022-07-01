@@ -103,7 +103,7 @@ class Camera(
 
         // Data for streaming, different than the recording data.
         val streamPreset = ResolutionPreset.valueOf(streamingPreset!!)
-        streamingProfile = CameraUtils.getBestAvailableCamcorderProfileForResolutionPreset(cameraName, streamPreset)
+        streamingProfile = CameraUtils.getBestAvailableCamcorderProfileForResolutionPreset2(activity!!, cameraName, streamPreset)
 
 //        glView = FlutterGLSurfaceView(activity, flutterTexture.surfaceTexture())
         glView = LightOpenGlView(activity)

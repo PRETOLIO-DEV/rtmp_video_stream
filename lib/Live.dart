@@ -162,7 +162,8 @@ class LiveConfig {
   });
 
   CameraController ConfigAndroid(){
-    return  CameraController(this.cameras!, this.resolutionPreset, androidUseOpenGL: true);
+    //return  CameraController(this.cameras!, this.resolutionPreset, androidUseOpenGL: true);
+    return  CameraController(this.cameras!, ResolutionPreset.medium, androidUseOpenGL: true);
   }
 
   RtmpManager ConfigIos(){

@@ -129,7 +129,7 @@ class RtmpCameraConnector(val context: Context, val useOpenGL: Boolean, val isPo
                 width,
                 height,
                 24,
-                if (bitrate > 1050000) 1050000 else bitrate,
+                if (bitrate > 600000) 600000 else bitrate,
                 if (useOpenGL) 0 else rotation,
                 hardwareRotation,
                 iFrameInterval,

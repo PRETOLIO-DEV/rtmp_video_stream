@@ -133,11 +133,19 @@ class CameraNativeView(
 
         try {
             if (!rtmpCamera.isStreaming) {
-                val streamingSize = CameraUtils.getBestAvailableCamcorderProfileForResolutionPreset(cameraName, preset)
+                val streamingSize = CameraUtils.getBestAvailableCamcorderProfileForResolutionPreset2(activity!!, cameraName, preset)
+                val ratioWidth = streamingSize.videoFrameWidth
+                val ratioHeight = streamingSize.videoFrameHeight
+                val ratioBitRate = 560000 //streamingSize.videoBitRate
+                Log.d("CameraNativeView", "videoFrameWidth: $ratioWidth ratioHeight: $ratioHeight ratioBitRate: $ratioBitRate")
                 if (rtmpCamera.isRecording || rtmpCamera.prepareAudio() && rtmpCamera.prepareVideo(
-                                streamingSize.videoFrameWidth,
-                                streamingSize.videoFrameHeight,
-                                streamingSize.videoBitRate)) {
+                                ratioWidth,
+                                ratioHeight,
+                                24, //fps padrao 30
+                                ratioBitRate,
+                                2, //iFrameInterval padrao 2
+                                90 //rotation could be 90, 180, 270 or 0 (Normally 0 if you are streaming in landscape or 90 * if you are streaming in Portrait).
+                    )) {
                     // ready to start streaming
                     rtmpCamera.startStream(url)
                 } else {

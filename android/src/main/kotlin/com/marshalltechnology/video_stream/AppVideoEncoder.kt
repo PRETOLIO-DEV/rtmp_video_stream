@@ -92,8 +92,8 @@ class AppVideoEncoder(
             videoFormat.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, 640 * 360)
             videoFormat.setInteger(MediaFormat.KEY_CAPTURE_RATE, 20);
             videoFormat.setInteger(MediaFormat.KEY_PRIORITY, 0 /* realtime priority */);
-            videoFormat.setInteger(MediaFormat.KEY_BIT_RATE, bitrate)
-            videoFormat.setInteger(MediaFormat.KEY_FRAME_RATE, fps)
+            videoFormat.setInteger(MediaFormat.KEY_BIT_RATE, /*600 * 1000*/ bitrate)
+            videoFormat.setInteger(MediaFormat.KEY_FRAME_RATE, 24 /*fps*/)
             videoFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 300)
             videoFormat.setInteger(MediaFormat.KEY_ROTATION, rotation)
             if (this.avcProfile > 0 && this.avcProfileLevel > 0) {
