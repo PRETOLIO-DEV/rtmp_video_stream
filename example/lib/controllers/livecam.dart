@@ -68,9 +68,11 @@ class LiveCam extends ChangeNotifier {
   QRCodeModel? get qrCode => _qrCode;
   set qrCode(QRCodeModel? v){
     _qrCode = v ?? QRCodeModel(id: 1, mediaUrl: Config.urlTeste);
-    if(v != null){
+    print(_qrCode?.mediaUrl);
+    if(_qrCode != null){
       initialize();
     }
+    notifyListeners();
   }
 
   bool _buttomOn = false;

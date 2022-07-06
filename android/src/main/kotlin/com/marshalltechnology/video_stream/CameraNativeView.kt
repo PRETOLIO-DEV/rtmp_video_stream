@@ -14,6 +14,7 @@ import android.view.View
 import android.widget.Toast
 import com.pedro.encoder.input.video.CameraHelper.Facing.BACK
 import com.pedro.encoder.input.video.CameraHelper.Facing.FRONT
+import com.pedro.encoder.input.video.CameraHelper
 import com.pedro.rtplibrary.rtmp.RtmpCamera2
 import com.pedro.rtplibrary.view.LightOpenGlView
 import io.flutter.plugin.common.MethodChannel
@@ -137,6 +138,7 @@ class CameraNativeView(
                 val ratioWidth = streamingSize.videoFrameWidth
                 val ratioHeight = streamingSize.videoFrameHeight
                 val ratioBitRate = 560000 //streamingSize.videoBitRate
+                val rotation = CameraHelper.getCameraOrientation(activity!!)
                 Log.d("CameraNativeView", "videoFrameWidth: $ratioWidth ratioHeight: $ratioHeight ratioBitRate: $ratioBitRate")
                 if (rtmpCamera.isRecording || rtmpCamera.prepareAudio() && rtmpCamera.prepareVideo(
                                 ratioWidth,
@@ -144,7 +146,7 @@ class CameraNativeView(
                                 24, //fps padrao 30
                                 ratioBitRate,
                                 2, //iFrameInterval padrao 2
-                                90 //rotation could be 90, 180, 270 or 0 (Normally 0 if you are streaming in landscape or 90 * if you are streaming in Portrait).
+                                rotation //rotation could be 90, 180, 270 or 0 (Normally 0 if you are streaming in landscape or 90 * if you are streaming in Portrait).
                     )) {
                     // ready to start streaming
                     rtmpCamera.startStream(url)
