@@ -3,10 +3,10 @@
 import 'package:flutter/material.dart';
 
 class Config {
-  static final String urlTeste = 'rtmp://qa-livecommerce.cliqx.com.br:1935/live/f8708d1e74294f56aadb6a36e7e38524';
-  final String urlPlayer = 'https://qa-livecommerce.cliqx.com.br:19588/hls/f8708d1e74294f56aadb6a36e7e38524.m3u8';
-  static final String finishUrlProd = 'https://livecommerce-pernambucanas.cliqx.com.br/livecommerce-backend/api/VisualContent/Finish/';
-  static final String finishUrlHomolog = 'https://qa-livecommerce.cliqx.com.br/livecommerce-backend/api/VisualContent/Finish/';
+  static const String urlTeste = 'rtmp://qa-livecommerce.cliqx.com.br:1935/stream/eaa206daf8db4e90bdfe130bbad80bd2';
+  final String urlPlayer = 'https://qa-livecommerce.cliqx.com.br:19588/hls/eaa206daf8db4e90bdfe130bbad80bd2.m3u8';
+  static const String finishUrlProd = 'https://livecommerce-pernambucanas.cliqx.com.br/livecommerce-backend/api/VisualContent/Finish/';
+  static const String finishUrlHomolog = 'https://qa-livecommerce.cliqx.com.br/livecommerce-backend/api/VisualContent/Finish/';
 
 
   static const MaterialColor colorPri = MaterialColor(
