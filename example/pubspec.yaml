@@ -13,12 +13,12 @@ dependencies:
     sdk: flutter
 
   intl: ^0.17.0
-  cupertino_icons: ^1.0.2
+  cupertino_icons: ^1.0.5
   flutter_svg: any
   permission_handler: any
   provider: any
-  another_flushbar: 1.10.28
-  qr_code_scanner: ^0.7.0
+  another_flushbar: ^1.12.29
+  qr_code_scanner: ^1.0.1
   http: any
 
 
@@ -31,7 +31,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  flutter_lints: ^1.0.0
+  flutter_lints: ^2.0.1
 
 
 flutter:
